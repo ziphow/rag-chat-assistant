@@ -14,7 +14,7 @@ from app.routers.files import router as file_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("服务器启动成功")
-    #await create_db_and_tables() # 异步创建系统数据库表
+    await create_db_and_tables() # 异步创建系统数据库表
     yield
     print("服务器关闭成功")
 
