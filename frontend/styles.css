@@ -506,6 +506,60 @@ body {
     color: var(--text-primary);
 }
 
+/* 消息操作栏 */
+.message-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.msg-action-btn {
+    background: white;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    box-shadow: var(--shadow-sm);
+}
+
+.msg-action-btn .copy-label {
+    line-height: 1;
+}
+
+.msg-action-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.msg-action-btn.copied {
+    background: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
+/* 用户消息的复制按钮 — 实心白色背景，在渐变气泡上清晰可见 */
+.message.user .msg-action-btn {
+    background: white;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: var(--text-secondary);
+}
+
+.message.user .msg-action-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
 .chat-title {
     flex: 1;
     font-size: 16px;

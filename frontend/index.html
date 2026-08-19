@@ -216,35 +216,8 @@
                     </div>
                     <h2>有什么可以帮你的？</h2>
                     <p>我可以回答问题、分析图片和文件，随时为你服务</p>
-                    <div class="suggestion-cards">
-                        <div class="suggestion-card" onclick="useSuggestion('请帮我写一首关于春天的诗')">
-                            <div class="suggestion-icon">✍️</div>
-                            <div class="suggestion-text">
-                                <strong>写一首诗</strong>
-                                <span>帮我写一首关于春天的诗</span>
-                            </div>
-                        </div>
-                        <div class="suggestion-card" onclick="useSuggestion('请解释什么是机器学习')">
-                            <div class="suggestion-icon">💡</div>
-                            <div class="suggestion-text">
-                                <strong>知识问答</strong>
-                                <span>请解释什么是机器学习</span>
-                            </div>
-                        </div>
-                        <div class="suggestion-card" onclick="useSuggestion('请帮我制定一个学习计划')">
-                            <div class="suggestion-icon">📋</div>
-                            <div class="suggestion-text">
-                                <strong>制定计划</strong>
-                                <span>帮我制定一个学习计划</span>
-                            </div>
-                        </div>
-                        <div class="suggestion-card" onclick="useSuggestion('上传一张图片，我来帮你分析')">
-                            <div class="suggestion-icon">🖼️</div>
-                            <div class="suggestion-text">
-                                <strong>图片分析</strong>
-                                <span>上传图片，我来帮你分析</span>
-                            </div>
-                        </div>
+                    <div class="suggestion-cards" id="suggestion-cards">
+                        <!-- 动态生成 -->
                     </div>
                 </div>
             </div>
@@ -381,6 +354,15 @@
         </div>
     </div>
 
+    <!-- JS 模块（按依赖顺序加载） -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/markdown.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/knowledge-base.js"></script>
+    <script src="js/file-upload.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
