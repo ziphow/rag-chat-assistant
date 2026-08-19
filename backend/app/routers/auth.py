@@ -38,7 +38,7 @@ async def login(username: str = Form(...),
                 "username": result.username,
                 "email": result.email,
                 "avatar": None
-            }
+            },
         }
     }
 

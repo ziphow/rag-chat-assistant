@@ -1,5 +1,6 @@
 from typing import Optional, List
 from datetime import datetime
+
 from sqlmodel import SQLModel, Field, Relationship, JSON
 from sqlalchemy import Text, func, Column, DateTime
 
@@ -60,6 +61,39 @@ class Message(SQLModel, table=True):
     # 关系
     chat: Chat = Relationship(back_populates="messages")
 
+# ---------------------------------------RAG模块相关表-----------------------------------------
+# ------------------------ 知识库表 --------------------
+class KnowledgeBases(SQLModel, table=True):
+    __tablename__ = "knowledge_bases"
+
+    id: Optional[int] = Field(default=None, primary_key=True,description="自增主键")
+    user_id: int = Field(foreign_key="users.id", nullable=False,description="所属用户")
+    name: str = Field(..., nullable=False,max_length=100,description="知识库名称")
+    description:str=Field(default="暂无描述",max_length=1000,nullable=False,description="知识库描述")
+    created_at: datetime = Field(
+        default_factory=datetime.now,description="创建时间",
+        sa_column=Column(DateTime, server_default=func.now())
+    )
+    updated_at: datetime = Field(
+        default_factory=datetime.now,description="修改时间",
+        sa_column=Column(DateTime, server_default=func.now(), onupdate=func.now())
+    )
+
+# ------------------------ 知识库文档表 --------------------
+class KnowledgeDocuments(SQLModel, table=True):
+    __tablename__ = "knowledge_documents"
+
+    id: Optional[int] = Field(default=None, primary_key=True,description="自增主键")
+    kb_id:int = Field(foreign_key="knowledge_bases.id", nullable=False,description="外键，所属知识库")
+    filename:str=Field(...,max_length=255,description="原始文件名")
+    file_path:str=Field(...,max_length=500,description="服务器存储路径")
+    file_size:int=Field(...,description="文件大小（字节）")
+    status: str = Field(default="processing", description="处理状态")
+    chunk_count:int=Field(...,description="分块数量")
+    created_at: datetime = Field(
+        default_factory=datetime.now, description="创建时间",
+        sa_column=Column(DateTime, server_default=func.now())
+    )
 
 #------创建表--------
 import os

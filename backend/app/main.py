@@ -9,12 +9,13 @@ from app.routers.auth import router as auth_router
 from app.routers.chats import router as chat_router
 from app.routers.messages import router as message_router
 from app.routers.files import router as file_router
+from app.routers.knowledge_bases import router as knowledge_base_router
 
 # 定义 lifespan 上下文管理器
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("服务器启动成功")
-    await create_db_and_tables() # 异步创建系统数据库表
+    #await create_db_and_tables() # 异步创建系统数据库表
     yield
     print("服务器关闭成功")
 
@@ -39,3 +40,4 @@ app.include_router(auth_router)
 app.include_router(chat_router)
 app.include_router(message_router)
 app.include_router(file_router)
+app.include_router(knowledge_base_router)
