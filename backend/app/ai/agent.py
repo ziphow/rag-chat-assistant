@@ -13,6 +13,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
 # ----------------------------定义智能体的系统提示词---------------------------
 AGENT_SYSTEM_PROMPT="""
 你是一个智能AI助手，模型使用qwen3.7-plus。
@@ -57,6 +58,26 @@ SUMMARY_SYSTEM_PROMPT="""
 直接输出摘要文本，不要添加"摘要："等前缀，不要输出任何额外说明。
 
 """
+# ----------------------------定义智能体的中间件（动态提示词）---------------------------
+from langchain.agents.middleware import dynamic_prompt, ModelRequest
+from dataclasses import dataclass
+
+@dataclass
+class AgentContext:
+    temp_instruction: str | None = None
+
+@dynamic_prompt
+def dynamic_system_prompt(request: ModelRequest) -> str:
+    """在已有系统提示词基础上，动态追加临时指令"""
+    base = AGENT_SYSTEM_PROMPT  # 原来的系统提示词
+
+    # 从 runtime context 获取临时指令
+    if request.runtime and request.runtime.context:
+        temp = request.runtime.context.temp_instruction
+        if temp:
+            return f"{base}\n\n[临时指令：]\n{temp}"
+    return base
+
 # -----------------------------定义智能体的工具-----------------------------
 @tool
 def get_time()->str:
@@ -111,9 +132,9 @@ async def get_agent():
     _agent  = create_agent(
         llm,
         tools=[get_time,web_search],
-        system_prompt=AGENT_SYSTEM_PROMPT,
         checkpointer=checkpointer,
-        middleware=[middleware,],
+        middleware=[middleware,dynamic_system_prompt],
+        context_schema=AgentContext,
         #response_format=AnswerInfo, # 结构化输出
     )
     return _agent

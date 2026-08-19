@@ -1,6 +1,6 @@
 from typing import Optional, List
 from datetime import datetime
-
+from enum import Enum
 from sqlmodel import SQLModel, Field, Relationship, JSON
 from sqlalchemy import Text, func, Column, DateTime
 
@@ -80,6 +80,11 @@ class KnowledgeBases(SQLModel, table=True):
     )
 
 # ------------------------ 知识库文档表 --------------------
+class DocStatus(str, Enum):
+    processing = "processing"
+    success = "success"
+    failed = "failed"
+
 class KnowledgeDocuments(SQLModel, table=True):
     __tablename__ = "knowledge_documents"
 
@@ -88,7 +93,7 @@ class KnowledgeDocuments(SQLModel, table=True):
     filename:str=Field(...,max_length=255,description="原始文件名")
     file_path:str=Field(...,max_length=500,description="服务器存储路径")
     file_size:int=Field(...,description="文件大小（字节）")
-    status: str = Field(default="processing", description="处理状态")
+    status: DocStatus = Field(default=DocStatus.processing, description="处理状态")
     chunk_count:int=Field(...,description="分块数量")
     created_at: datetime = Field(
         default_factory=datetime.now, description="创建时间",

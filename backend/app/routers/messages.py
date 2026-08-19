@@ -1,16 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,status
 from fastapi.responses import StreamingResponse
 
 from datetime import datetime
 
-from langchain_core.messages import AIMessageChunk, HumanMessage
 from sqlmodel import select, Field
 from pydantic import BaseModel
 
-from app.database import get_session,User,Chat,Message
+from app.database import get_session,User,Chat,Message,KnowledgeBases,KnowledgeDocuments
 from app.dependencies import get_current_user
 from app.services.sse_stream import event_stream
-from app.rag.rag import retrieve_relevant_docs
 router = APIRouter()
 
 
@@ -28,14 +26,23 @@ class UserMessages(BaseModel):
     files: list[File] | None = Field(description="文件数组，每项包含 fileId、name、size")
     kb_id: int | None = Field(description="知识库 ID。传入时 AI 会先检索知识库相关内容再回答")
 
+# 发送消息接口，流式回复
 @router.post("/message/send")
 async def send_messages(message: UserMessages,
                         current_user: User = Depends(get_current_user),
                         session=Depends(get_session)):
     # 验证权限
     chat = (await session.exec(select(Chat).where(Chat.id == message.chat_id))).first()
-    if not chat or chat.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权操作该对话")
+    if not chat :
+        raise HTTPException(status_code=status.HTTP_404_FORBIDDEN, detail="对话不存在")
+    if chat.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权操作该对话")
+    if  message.kb_id:
+        kb = await session.get(KnowledgeBases, message.kb_id)
+        if not kb:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="知识库不存在")
+        if kb.user_id != current_user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权访问该知识库！")
 
     # 1. 保存用户消息
     user_message = Message(
@@ -47,18 +54,10 @@ async def send_messages(message: UserMessages,
     session.add(user_message)
     await session.flush()
 
-    # 2. 检查是否引用了知识库
-    if message.kb_id:
-        # 1. 检索相关文档片段
-        relevant_chunks = await retrieve_relevant_docs(message.kb_id, message.content)
-        # 2. 将检索结果拼接到用户消息中
-        context = "\n\n".join(relevant_chunks)
-        message.content = f"以下是知识库中的相关内容，请基于这些内容回答：\n\n{context}\n\n用户问题：{message.content}"
-
-    # 返回 StreamingResponse
+    # 3、调用 app.services.sse_stream 的 event_stream函数实现流式回复
     return StreamingResponse(
         event_stream(
-            message.chat_id, message.content, message.images, message.files, session
+            message.chat_id, message.content, session, message.images, message.files,message.kb_id
         ),
         media_type="text/event-stream"
     )
