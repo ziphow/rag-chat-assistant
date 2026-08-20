@@ -27,6 +27,7 @@ dependencies = [
     "python-dotenv>=1.2.2",
     "python-jose>=3.5.0",
     "python-multipart>=0.0.32",
+    "rich>=15.0.0",
     "sqlalchemy[asyncio]>=2.0.52",
     "sqlmodel>=0.0.39",
     "unstructured>=0.25.2",

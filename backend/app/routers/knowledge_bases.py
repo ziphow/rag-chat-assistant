@@ -4,7 +4,6 @@ from pathlib import Path
 import time
 
 from fastapi import APIRouter, Depends, HTTPException, status,UploadFile
-from langchain_community.tools import sleep
 
 from sqlmodel import select, delete,Field,func
 from pydantic import BaseModel
@@ -12,7 +11,7 @@ from typing import Optional
 
 from app.database import get_session, KnowledgeBases, KnowledgeDocuments, User, DocStatus
 from app.rag.document_loader import load_and_split
-from app.rag.vector_store import get_vectorstore
+from app.rag.vector_store import get_vectorstore,delete_vectorstore_collection
 from app.dependencies import get_current_user
 
 from rich import print as rprint
@@ -198,6 +197,44 @@ async def delete_document(kb_id: int,
 
     # 4. 删除文档对应的数据库信息
     await session.delete(doc)
+    await session.commit()
+
+    return {
+        "code": 200,
+        "message": "删除成功",
+        "data": None
+    }
+
+# 删除知识库及其所有的文档和向量数据。
+@router.delete("/knowledge-bases/{kb_id}")
+async def delete_knowledge_bases(kb_id: int,
+                                 current_user: User = Depends(get_current_user),
+                                 session=Depends(get_session)):
+    # 0. 验证知识库是否归属该用户
+    kb = await session.get(KnowledgeBases, kb_id)
+    if not kb:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="知识库不存在")
+    if kb.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权访问该知识库！")
+
+    # 1. 查询所有文档
+    docs = (await session.exec(
+        select(KnowledgeDocuments).where(KnowledgeDocuments.kb_id == kb_id)
+    )).all()
+    # 2. 删除整个 Chroma collection（一次性删除所有向量）
+    delete_vectorstore_collection(kb_id)
+
+    # 3. 删除本地文件
+    for doc in docs:
+        if doc.file_path:
+            file_path = Path(doc.file_path)
+            if file_path.exists():
+                await asyncio.to_thread(os.remove, file_path)
+
+    # 4. 删除所有文档记录
+    await session.exec(delete(KnowledgeDocuments).where(KnowledgeDocuments.kb_id == kb_id))
+    # 5. 删除知识库记录
+    await session.delete(kb)
     await session.commit()
 
     return {

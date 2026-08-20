@@ -20,3 +20,14 @@ def get_vectorstore(kb_id: int) -> Chroma:
         embedding_function=TextEmbeddingModel,  # 指定模型
         persist_directory="data/chroma_db",     # 指定向量数据库存储路径
     )
+
+import chromadb
+
+def delete_vectorstore_collection(kb_id: int):
+    """删除知识库对应的整个 Chroma collection"""
+    client = chromadb.PersistentClient(path="data/chroma_db")
+    try:
+        client.delete_collection(f"kb_{kb_id}")
+    except Exception:
+        pass  # collection 可能不存在（空知识库）
+    get_vectorstore.cache_clear()  # 清除 lru_cache 缓存

@@ -16,13 +16,15 @@ async def load_and_split(file_path: str) -> list:
         text = '\n'.join(para.text for para in doc.paragraphs)
         documents = [Document(page_content=text, metadata={"source": file_path})]
     elif ext in ('txt', 'md'):
-        loader = TextLoader(file_path)
+        loader = TextLoader(file_path, encoding="utf-8")
         documents = await loader.aload()
     elif ext == 'csv':
         loader = CSVLoader(file_path)
         documents = await loader.aload()
+    elif ext == 'doc':
+        raise ValueError("不支持 .doc 格式，请转换为 .docx 后上传")
     else:
-        loader = TextLoader(file_path)
+        loader = TextLoader(file_path, encoding="utf-8")
         documents = await loader.aload()
 
     # 3. 分块
