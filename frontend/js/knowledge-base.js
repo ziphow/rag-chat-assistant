@@ -210,23 +210,16 @@ async function handleKbDocUpload(event) {
                 method: 'POST',
                 body: formData,
             });
-            // 后端同步处理完毕，根据返回状态提示
-            if (res.data && res.data.status === 'success') {
-                showToast(`${file.name} 处理完成`, 'success');
-            } else if (res.data && res.data.status === 'failed') {
-                showToast(`${file.name} 处理失败`, 'error');
-            } else {
-                showToast(`${file.name} 上传成功，处理中...`, 'info');
-            }
+            // 后端立即返回 processing 状态
+            showToast(`${file.name} 上传成功，正在处理...`, 'info');
         } catch (err) {
             showToast(`${file.name} 上传失败: ${err.message}`, 'error');
         }
     }
 
+    // 立即刷新文档列表（显示 processing 状态），然后启动轮询
     await loadKbDocuments(state.currentDetailKbId);
     loadKnowledgeBases();
-
-    // 如果仍有 processing 状态的文档，启动轮询
     pollKbDocumentStatus();
 }
 
