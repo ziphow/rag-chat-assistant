@@ -477,6 +477,8 @@ body {
     flex-direction: column;
     min-width: 0;
     background: var(--bg-main);
+    position: relative;
+    overflow: hidden;
 }
 
 .chat-header {
@@ -1164,11 +1166,32 @@ body {
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    position: relative;
 }
 
 .btn-attach:hover {
     color: var(--primary);
     background: rgba(99, 102, 241, 0.08);
+}
+
+/* 上传按钮角标：显示已选文件数量 */
+.btn-attach-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 2px var(--bg-main);
 }
 
 .input-box {
@@ -1225,6 +1248,35 @@ body {
     font-size: 12px;
     color: var(--text-muted);
     margin-top: 8px;
+}
+
+/* ==================== 拖拽上传遮罩 ==================== */
+.drag-drop-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    background: rgba(99, 102, 241, 0.08);
+    border: 2px dashed var(--primary);
+    border-radius: var(--radius-lg);
+    pointer-events: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.drag-drop-overlay.active {
+    display: flex;
+}
+
+.drag-drop-content {
+    text-align: center;
+    color: var(--primary);
+}
+
+.drag-drop-content p {
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 600;
 }
 
 /* ==================== 图片预览弹窗 ==================== */

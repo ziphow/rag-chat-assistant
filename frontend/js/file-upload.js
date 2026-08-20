@@ -98,16 +98,24 @@ async function handlePaste(event) {
 
 function handleDragOver(event) {
     event.preventDefault();
-    event.currentTarget.classList.add('drag-over');
+    const overlay = document.getElementById('drag-drop-overlay');
+    if (overlay) overlay.classList.add('active');
 }
 
 function handleDragLeave(event) {
-    event.currentTarget.classList.remove('drag-over');
+    // relatedTarget 为鼠标进入的新元素；若它仍在 chat-main 内则不隐藏遮罩
+    const chatMain = document.getElementById('chat-main');
+    if (event.relatedTarget && chatMain && chatMain.contains(event.relatedTarget)) {
+        return;
+    }
+    const overlay = document.getElementById('drag-drop-overlay');
+    if (overlay) overlay.classList.remove('active');
 }
 
 async function handleDrop(event) {
     event.preventDefault();
-    event.currentTarget.classList.remove('drag-over');
+    const overlay = document.getElementById('drag-drop-overlay');
+    if (overlay) overlay.classList.remove('active');
 
     const files = event.dataTransfer?.files;
     if (!files || files.length === 0) return;
@@ -122,15 +130,23 @@ async function handleDrop(event) {
 /** 渲染输入框上方的文件预览区 */
 function renderFilePreview() {
     const previewArea = document.getElementById('file-preview-area');
+    const badge = document.getElementById('attach-badge');
 
     if (state.selectedFiles.length === 0) {
         previewArea.style.display = 'none';
         previewArea.innerHTML = '';
+        if (badge) badge.style.display = 'none';
         return;
     }
 
     previewArea.style.display = 'flex';
     previewArea.innerHTML = '';
+
+    // 更新上传按钮上的角标数字
+    if (badge) {
+        badge.textContent = state.selectedFiles.length;
+        badge.style.display = 'flex';
+    }
 
     state.selectedFiles.forEach((file, index) => {
         const previewDiv = document.createElement('div');
