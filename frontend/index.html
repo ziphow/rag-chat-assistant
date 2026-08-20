@@ -3,93 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 智能助手</title>
+    <title>知源 AI · 智能知识助手</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 </head>
 <body>
 
-    <!-- ============ 登录页面 ============ -->
+    <!-- ============ 登录页（长滚动落地页） ============ -->
     <div id="login-page" class="login-page">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="logo-icon">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                        <rect width="48" height="48" rx="12" fill="url(#logo-grad)"/>
-                        <path d="M24 12L36 18V30L24 36L12 30V18L24 12Z" stroke="white" stroke-width="2" fill="none"/>
-                        <circle cx="24" cy="24" r="4" fill="white"/>
-                        <defs>
-                            <linearGradient id="logo-grad" x1="0" y1="0" x2="48" y2="48">
-                                <stop stop-color="#6366f1"/>
-                                <stop offset="1" stop-color="#8b5cf6"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                </div>
-                <h1>AI 智能助手</h1>
-                <p>欢迎回来，请登录您的账号</p>
+        <!-- 滚动背景层（哲风壁纸随滚动交叉淡入） -->
+        <div class="lp-bg-stack" aria-hidden="true">
+            <div class="lp-bg-layer" data-layer="features" style="background-image:url('assets/material/web/bg-cloud-night.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="story" style="background-image:url('assets/material/web/bg-impression-night.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="multimodal" style="background-image:url('assets/material/web/bg-horizon.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="knowledge" style="background-image:url('assets/material/web/bg-reflection.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="streaming" style="background-image:url('assets/material/web/bg-city.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="gallery" style="background-image:url('assets/material/web/bg-sword.jpg')"></div>
+        </div>
+
+        <!-- 顶部导航 -->
+        <header class="lp-nav">
+            <div class="lp-nav-logo">
+                <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+                    <rect width="48" height="48" rx="12" fill="url(#lp-logo-grad)"/>
+                    <path d="M24 11L35 17.5V30.5L24 37L13 30.5V17.5L24 11Z" stroke="white" stroke-width="2" fill="none"/>
+                    <circle cx="24" cy="24" r="4" fill="white"/>
+                    <defs>
+                        <linearGradient id="lp-logo-grad" x1="0" y1="0" x2="48" y2="48">
+                            <stop stop-color="#6366f1"/>
+                            <stop offset="1" stop-color="#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>知源 AI</span>
             </div>
+            <div class="lp-nav-actions">
+                <button class="lp-nav-link" onclick="scrollToAuth()">登录</button>
+                <button class="lp-nav-cta" onclick="scrollToAuth('register')">免费注册</button>
+            </div>
+        </header>
 
-            <!-- 登录表单 -->
-            <form id="login-form" class="auth-form">
-                <div class="form-group">
-                    <label for="login-username">用户名 / 邮箱</label>
-                    <input type="text" id="login-username" placeholder="请输入用户名或邮箱" required>
+        <!-- Hero 主视觉区 -->
+        <section class="lp-hero">
+            <div class="lp-hero-bg" aria-hidden="true">
+                <!-- 梵高「星空」AI 动态壁纸 + 静态 poster 兜底 -->
+                <video class="lp-hero-video" autoplay muted loop playsinline preload="auto"
+                       poster="assets/material/web/hero-starry.jpg" aria-hidden="true">
+                    <source src="assets/material/web/starry-video.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="lp-hero-inner">
+                <h1 class="lp-hero-title">让 AI 成为你的<br>智能对话伙伴</h1>
+                <p class="lp-hero-sub">分析图片、解析文档、检索知识库，一个真正会思考的助手</p>
+                <div class="lp-hero-cta">
+                    <button class="lp-btn-primary" onclick="scrollToAuth()">立即开始</button>
+                    <button class="lp-btn-ghost" onclick="scrollToFeatures()">探索功能</button>
                 </div>
-                <div class="form-group">
-                    <label for="login-password">密码</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="login-password" placeholder="请输入密码" required>
-                        <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
+            </div>
+            <div class="lp-scroll-hint" aria-hidden="true">
+                <span>向下滚动</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"/>
+                </svg>
+            </div>
+        </section>
+
+        <!-- 核心能力 -->
+        <section class="lp-section lp-features" id="lp-features">
+            <h2 class="lp-section-title">核心能力</h2>
+            <p class="lp-section-desc">一个助手，覆盖对话、分析与知识管理</p>
+            <div class="lp-feature-grid">
+                <div class="lp-feature-card">
+                    <div class="lp-feature-media">
+                        <img src="assets/feature-multimodal.jpg" alt="多模态对话" loading="lazy">
+                    </div>
+                    <div class="lp-feature-body">
+                        <div class="lp-feature-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                             </svg>
-                        </button>
+                        </div>
+                        <h3>多模态对话</h3>
+                        <p>支持文字、图片与文件的多模态分析，拖拽即可发送</p>
                     </div>
                 </div>
-                <div class="form-options">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="remember-me">
-                        <span>记住我</span>
-                    </label>
-                    <a href="#" class="link-text">忘记密码？</a>
-                </div>
-                <button type="submit" class="btn-primary">登 录</button>
-                <p class="auth-switch">还没有账号？<a href="#" onclick="switchAuth('register')">立即注册</a></p>
-            </form>
-
-            <!-- 注册表单 -->
-            <form id="register-form" class="auth-form" style="display:none;">
-                <div class="form-group">
-                    <label for="reg-username">用户名</label>
-                    <input type="text" id="reg-username" placeholder="请输入用户名" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-email">邮箱</label>
-                    <input type="email" id="reg-email" placeholder="请输入邮箱" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-password">密码</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="reg-password" placeholder="至少6位密码" required>
-                        <button type="button" class="toggle-password" onclick="togglePassword('reg-password', this)">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                <circle cx="12" cy="12" r="3"/>
+                <div class="lp-feature-card">
+                    <div class="lp-feature-media">
+                        <img src="assets/feature-knowledge.jpg" alt="知识库问答" loading="lazy">
+                    </div>
+                    <div class="lp-feature-body">
+                        <div class="lp-feature-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
                             </svg>
-                        </button>
+                        </div>
+                        <h3>知识库问答</h3>
+                        <p>上传文档构建专属知识库，基于检索精准回答</p>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="reg-password-confirm">确认密码</label>
-                    <input type="password" id="reg-password-confirm" placeholder="请再次输入密码" required>
+                <div class="lp-feature-card">
+                    <div class="lp-feature-media">
+                        <img src="assets/feature-realtime.jpg" alt="实时流式回复" loading="lazy">
+                    </div>
+                    <div class="lp-feature-body">
+                        <div class="lp-feature-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                            </svg>
+                        </div>
+                        <h3>实时流式回复</h3>
+                        <p>逐字流式输出，响应迅速自然，思考过程清晰可见</p>
+                    </div>
                 </div>
-                <button type="submit" class="btn-primary">注 册</button>
-                <p class="auth-switch">已有账号？<a href="#" onclick="switchAuth('login')">返回登录</a></p>
-            </form>
+                <div class="lp-feature-card">
+                    <div class="lp-feature-media">
+                        <img src="assets/feature-multichat.jpg" alt="多对话管理" loading="lazy">
+                    </div>
+                    <div class="lp-feature-body">
+                        <div class="lp-feature-icon">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                        </div>
+                        <h3>多对话管理</h3>
+                        <p>灵活创建、搜索与管理对话历史，随时回到上下文</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 滚动叙事（Apple 式逐词揭示，随滚动点亮） -->
+        <section class="lp-story" id="lp-story">
+            <div class="lp-story-sticky">
+                <p class="lp-story-text" id="lp-story-text">Grounded,<br>not guessed</p>
+            </div>
+        </section>
+
+        <!-- 分镜展示 1：多模态对话 -->
+        <section class="lp-showcase lp-showcase--media" id="lp-showcase-multimodal">
+            <div class="lp-showcase-media">
+                <img src="assets/material/web/lion.jpg" alt="狮子照片分析演示" loading="lazy">
+            </div>
+            <div class="lp-showcase-copy">
+                <span class="lp-showcase-eyebrow">多模态对话</span>
+                <h3 class="lp-showcase-title">图片、文档与文字，<br>一次对话全搞定</h3>
+                <p class="lp-showcase-desc">拖拽即可发送图片和文件，AI 自动理解并分析其中的内容，给出结构化、可执行的回答。</p>
+            </div>
+        </section>
+
+        <!-- 分镜展示 2：知识库问答 -->
+        <section class="lp-showcase lp-showcase--media lp-showcase--reverse" id="lp-showcase-knowledge">
+            <div class="lp-showcase-media">
+                <img src="assets/showcase-knowledge.jpg" alt="知识库问答演示" loading="lazy">
+            </div>
+            <div class="lp-showcase-copy">
+                <span class="lp-showcase-eyebrow">知识库问答</span>
+                <h3 class="lp-showcase-title">把资料交给它，<br>答案从此有据可循</h3>
+                <p class="lp-showcase-desc">上传 PDF、Word、Markdown 等文档构建专属知识库，基于检索精准回答，随时溯源。</p>
+            </div>
+        </section>
+
+        <!-- 分镜展示 3：实时流式回复 -->
+        <section class="lp-showcase lp-showcase--media" id="lp-showcase-streaming">
+            <div class="lp-showcase-media">
+                <img src="assets/material/web/zhe-vortex.jpg" alt="实时流式回复演示" loading="lazy">
+            </div>
+            <div class="lp-showcase-copy">
+                <span class="lp-showcase-eyebrow">实时流式回复</span>
+                <h3 class="lp-showcase-title">逐字输出，<br>思考过程清晰可见</h3>
+                <p class="lp-showcase-desc">流式响应迅速自然，无需漫长等待，重要时刻实时反馈。</p>
+            </div>
+        </section>
+
+        <!-- 灵感画廊（仿 haowallpaper 瀑布流透明卡片） -->
+        <section class="lp-section lp-gallery" id="lp-gallery">
+            <h2 class="lp-section-title">灵感画廊</h2>
+            <p class="lp-section-desc">每一张，都是 AI 可以读懂的世界</p>
+            <div class="lp-gallery-filters" id="gallery-filters">
+                <button class="g-filter active" data-cat="all">全部</button>
+                <button class="g-filter" data-cat="live">动态壁纸</button>
+                <button class="g-filter" data-cat="starry">星空</button>
+                <button class="g-filter" data-cat="nature">自然</button>
+                <button class="g-filter" data-cat="life">生灵</button>
+            </div>
+            <div class="lp-gallery-grid" id="gallery-grid">
+                <!-- js/gallery.js 动态渲染 -->
+            </div>
+        </section>
+
+        <!-- 登录 / 注册 -->
+        <section class="lp-section lp-auth-section" id="lp-auth">
+            <div class="lp-auth-card">
+                <div class="lp-auth-tabs">
+                    <button class="lp-auth-tab active" id="auth-tab-login" onclick="switchAuth('login')">登录</button>
+                    <button class="lp-auth-tab" id="auth-tab-register" onclick="switchAuth('register')">注册</button>
+                </div>
+
+                <!-- 登录表单 -->
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-username">用户名 / 邮箱</label>
+                        <input type="text" id="login-username" placeholder="请输入用户名或邮箱" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">密码</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="login-password" placeholder="请输入密码" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="remember-me">
+                            <span>记住我</span>
+                        </label>
+                        <a href="#" class="link-text">忘记密码？</a>
+                    </div>
+                    <button type="submit" class="btn-primary">登 录</button>
+                </form>
+
+                <!-- 注册表单 -->
+                <form id="register-form" class="auth-form" style="display:none;">
+                    <div class="form-group">
+                        <label for="reg-username">用户名</label>
+                        <input type="text" id="reg-username" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">邮箱</label>
+                        <input type="email" id="reg-email" placeholder="请输入邮箱" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">密码</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="reg-password" placeholder="至少6位密码" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('reg-password', this)">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password-confirm">确认密码</label>
+                        <input type="password" id="reg-password-confirm" placeholder="请再次输入密码" required>
+                    </div>
+                    <button type="submit" class="btn-primary">注 册</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="lp-footer">
+            <p>知源 AI · 由 FastAPI 与 LangChain 驱动</p>
+            <p class="lp-footer-meta">AI 生成内容仅供参考，请核实重要信息</p>
+            <p class="lp-footer-meta">画廊素材来源：哲风壁纸 · 样片日记 · 个人学习用途</p>
+        </footer>
+
+        <!-- 画廊灯箱 -->
+        <div class="g-lightbox" id="g-lightbox" aria-hidden="true">
+            <div class="g-lightbox-backdrop" id="g-lightbox-backdrop"></div>
+            <figure class="g-lightbox-body">
+                <img id="g-lightbox-img" src="" alt="">
+                <video id="g-lightbox-video" src="" controls autoplay loop playsinline></video>
+                <figcaption>
+                    <span id="g-lightbox-title"></span>
+                    <span class="g-lightbox-meta" id="g-lightbox-meta"></span>
+                </figcaption>
+            </figure>
+            <button class="g-lightbox-close" id="g-lightbox-close" aria-label="关闭预览">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
         </div>
     </div>
 
@@ -160,7 +358,9 @@
 
             <div class="sidebar-footer">
                 <div class="user-info" id="user-info">
-                    <div class="avatar" id="user-avatar">U</div>
+                    <button class="avatar-btn" id="user-avatar" onclick="openAvatarPicker()" title="切换头像" aria-label="切换头像">
+                        <img class="avatar-img" id="user-avatar-img" src="assets/avatars/avatar-0.png" alt="我的头像">
+                    </button>
                     <div class="user-details">
                         <span class="user-name" id="user-name">用户</span>
                         <span class="user-plan">免费版</span>
@@ -229,18 +429,8 @@
             <div class="message-list" id="message-list">
                 <!-- 欢迎界面 -->
                 <div class="welcome-screen" id="welcome-screen">
-                    <div class="welcome-logo">
-                        <svg width="64" height="64" viewBox="0 0 48 48" fill="none">
-                            <rect width="48" height="48" rx="12" fill="url(#welcome-grad)"/>
-                            <path d="M24 12L36 18V30L24 36L12 30V18L24 12Z" stroke="white" stroke-width="2" fill="none"/>
-                            <circle cx="24" cy="24" r="4" fill="white"/>
-                            <defs>
-                                <linearGradient id="welcome-grad" x1="0" y1="0" x2="48" y2="48">
-                                    <stop stop-color="#6366f1"/>
-                                    <stop offset="1" stop-color="#8b5cf6"/>
-                                </linearGradient>
-                            </defs>
-                        </svg>
+                    <div class="welcome-visual">
+                        <img src="assets/welcome-visual.jpg" alt="知源 AI 助手" loading="lazy">
                     </div>
                     <h2>有什么可以帮你的？</h2>
                     <p>我可以回答问题、分析图片和文件，随时为你服务</p>
@@ -401,17 +591,38 @@
         </div>
     </div>
 
+    <!-- ============ 头像选择弹层 ============ -->
+    <div class="avatar-picker" id="avatar-picker" aria-hidden="true">
+        <div class="avatar-picker-backdrop" onclick="closeAvatarPicker()"></div>
+        <div class="avatar-picker-panel" role="dialog" aria-label="选择头像">
+            <div class="avatar-picker-head">
+                <h3>选择头像</h3>
+                <button class="avatar-picker-close" onclick="closeAvatarPicker()" aria-label="关闭">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="avatar-grid" id="avatar-grid"><!-- 动态生成 --></div>
+        </div>
+    </div>
+
     <!-- JS 模块（按依赖顺序加载） -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/gallery.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="js/markdown.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/avatar.js"></script>
     <script src="js/chat.js"></script>
     <script src="js/knowledge-base.js"></script>
     <script src="js/file-upload.js"></script>
     <script src="js/file-history.js"></script>
+    <script src="js/interactions.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

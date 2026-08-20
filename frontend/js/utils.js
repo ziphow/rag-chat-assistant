@@ -76,10 +76,18 @@ function showToast(message, type = 'info') {
 // ==================== 弹窗通用函数 ====================
 
 function openModal(id) {
+    if (window.Anim && window.Anim.openModal) {
+        window.Anim.openModal(id);
+        return;
+    }
     document.getElementById(id).classList.add('active');
 }
 
 function closeModal(id) {
+    if (window.Anim && window.Anim.closeModal) {
+        window.Anim.closeModal(id);
+        return;
+    }
     document.getElementById(id).classList.remove('active');
 }
 

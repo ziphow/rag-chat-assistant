@@ -12,19 +12,35 @@
 
 /** 所有提示语（每次进入新对话随机选 4 条展示） */
 const SUGGESTIONS = [
-    { icon: '✍️', title: '写一首诗', text: '帮我写一首关于春天的诗，要有意境和韵律' },
-    { icon: '💡', title: '知识问答', text: '请解释什么是机器学习中的梯度下降算法' },
-    { icon: '📋', title: '制定计划', text: '帮我制定一个为期三个月的 Python 全栈学习计划' },
-    { icon: '🖼️', title: '图片分析', text: '上传一张图片，我来帮你分析其中的内容' },
-    { icon: '🔍', title: '网页搜索', text: '帮我搜索今天科技领域的最新新闻' },
-    { icon: '📚', title: '知识库问答', text: '选择一个知识库，然后向我提问文档中的内容' },
-    { icon: '💻', title: '代码助手', text: '帮我写一个 FastAPI 的 CORS 中间件配置，并解释每行代码的作用' },
-    { icon: '📊', title: '数据整理', text: '帮我把一段杂乱的文字整理成结构化的表格格式' },
-    { icon: '🧠', title: '头脑风暴', text: '帮我构思一个面向大学生的移动端 App 产品创意，包含核心功能和盈利模式' },
-    { icon: '📝', title: '文章润色', text: '帮我润色一段技术博客的草稿，使其更专业更易读' },
-    { icon: '🤔', title: '对比分析', text: '帮我对比分析 React 和 Vue 的优缺点，给出选型建议' },
-    { icon: '🐛', title: '调试求助', text: '我遇到一个 Python 报错：KeyError: 0，帮我分析可能的原因' },
+    { title: '写一首诗', text: '帮我写一首关于春天的诗，要有意境和韵律' },
+    { title: '知识问答', text: '请解释什么是机器学习中的梯度下降算法' },
+    { title: '制定计划', text: '帮我制定一个为期三个月的 Python 全栈学习计划' },
+    { title: '图片分析', text: '上传一张图片，我来帮你分析其中的内容' },
+    { title: '网页搜索', text: '帮我搜索今天科技领域的最新新闻' },
+    { title: '知识库问答', text: '选择一个知识库，然后向我提问文档中的内容' },
+    { title: '代码助手', text: '帮我写一个 FastAPI 的 CORS 中间件配置，并解释每行代码的作用' },
+    { title: '数据整理', text: '帮我把一段杂乱的文字整理成结构化的表格格式' },
+    { title: '头脑风暴', text: '帮我构思一个面向大学生的移动端 App 产品创意，包含核心功能和盈利模式' },
+    { title: '文章润色', text: '帮我润色一段技术博客的草稿，使其更专业更易读' },
+    { title: '对比分析', text: '帮我对比分析 React 和 Vue 的优缺点，给出选型建议' },
+    { title: '调试求助', text: '我遇到一个 Python 报错：KeyError: 0，帮我分析可能的原因' },
 ];
+
+/** 每条提示语的图标（SVG 线条风格，替代 emoji） */
+const SUGGESTION_ICONS = {
+    '写一首诗': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>',
+    '知识问答': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 11c.6.6.9 1.3.9 2h5.2c0-.7.3-1.4.9-2A6 6 0 0 0 12 3z"/></svg>',
+    '制定计划': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>',
+    '图片分析': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
+    '网页搜索': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+    '知识库问答': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+    '代码助手': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    '数据整理': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+    '头脑风暴': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    '文章润色': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+    '对比分析': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>',
+    '调试求助': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="6" width="7" height="12" rx="1.5"/><line x1="12" y1="6" x2="12" y2="20"/><line x1="6" y1="9" x2="8.5" y2="9"/><line x1="6" y1="15" x2="8.5" y2="15"/><line x1="18" y1="9" x2="15.5" y2="9"/><line x1="18" y1="15" x2="15.5" y2="15"/></svg>',
+};
 
 /** 随机选取 n 条不重复的提示语 */
 function pickRandomSuggestions(n = 4) {
@@ -39,7 +55,7 @@ function renderSuggestions() {
     const picks = pickRandomSuggestions(4);
     container.innerHTML = picks.map(s => `
         <div class="suggestion-card" data-text="${escapeHtml(s.text)}">
-            <div class="suggestion-icon">${s.icon}</div>
+            <div class="suggestion-icon">${SUGGESTION_ICONS[s.title] || ''}</div>
             <div class="suggestion-text">
                 <strong>${escapeHtml(s.title)}</strong>
                 <span>${escapeHtml(s.text)}</span>
@@ -52,6 +68,8 @@ function renderSuggestions() {
             useSuggestion(card.dataset.text || '');
         });
     });
+
+    if (window.Anim) window.Anim.staggerSuggestions();
 }
 
 /** 切换侧边栏收起/展开状态 */
@@ -148,6 +166,8 @@ function renderChatHistory(filter = '') {
         `;
         listEl.appendChild(item);
     });
+
+    if (window.Anim) window.Anim.batchHistory();
 }
 
 /** 搜索对话 */
@@ -266,12 +286,17 @@ async function clearCurrentChat() {
 
 // ==================== 消息渲染 ====================
 
-/** 渲染消息列表（保留 welcome-screen，只移除 .message 元素） */
-function renderMessages() {
+/** 渲染消息列表（保留 welcome-screen，只移除 .message 元素）
+ * @param {{ animateLast?: boolean }} [options]
+ */
+function renderMessages(options = {}) {
     const listEl = document.getElementById('message-list');
     const welcomeEl = document.getElementById('welcome-screen');
 
-    listEl.querySelectorAll('.message').forEach(el => el.remove());
+    listEl.querySelectorAll('.message').forEach(el => {
+        if (window.Anim) window.Anim.stopStreamPulse(el);
+        el.remove();
+    });
 
     if (!state.currentChatId) {
         if (welcomeEl) {
@@ -296,6 +321,11 @@ function renderMessages() {
         listEl.appendChild(createMessageElement(msg));
     });
 
+    if (options.animateLast && window.Anim) {
+        const msgs = listEl.querySelectorAll('.message');
+        window.Anim.messageEnter(msgs[msgs.length - 1]);
+    }
+
     scrollToBottom();
 }
 
@@ -308,7 +338,7 @@ function createMessageElement(msg) {
     messageDiv.className = `message ${msg.role}`;
 
     const avatarHtml = msg.role === 'user'
-        ? (state.currentUser?.username?.charAt(0)?.toUpperCase() || 'U')
+        ? '<img src="' + (window.Avatar && typeof window.Avatar.currentSrc === 'function' ? window.Avatar.currentSrc() : 'assets/avatars/avatar-0.png') + '" alt="我" class="avatar-img">'
         : '<img src="ai-avatar.jpg" alt="AI" class="avatar-img">';
 
     let contentHtml = '';
@@ -418,12 +448,19 @@ function showTypingIndicator() {
         </div>
     `;
     listEl.appendChild(typingDiv);
+    if (window.Anim) {
+        window.Anim.messageEnter(typingDiv);
+        window.Anim.startTypingDots(typingDiv);
+    }
     scrollToBottom();
 }
 
 function hideTypingIndicator() {
     const typingEl = document.getElementById('typing-indicator-msg');
-    if (typingEl) typingEl.remove();
+    if (typingEl) {
+        if (typeof gsap !== 'undefined') gsap.killTweensOf(typingEl.querySelectorAll('*'));
+        typingEl.remove();
+    }
 }
 
 // ==================== 发送消息 + SSE 流式接收 ====================
@@ -489,7 +526,7 @@ async function sendMessage() {
     autoResize(inputEl);
     state.selectedFiles = [];
     renderFilePreview();
-    renderMessages();
+    renderMessages({ animateLast: true });
     renderChatHistory();
 
     // 显示思考中
@@ -534,12 +571,13 @@ async function sendMessage() {
                 timestamp: new Date().toISOString(),
             };
             chat.messages.push(aiMessage);
-            renderMessages();
+            renderMessages({ animateLast: true });
 
             // 获取刚创建的 AI 消息 DOM 元素
             const listEl = document.getElementById('message-list');
             const msgEls = listEl.querySelectorAll('.message');
             const aiMsgEl = msgEls[msgEls.length - 1];
+            if (window.Anim) window.Anim.startStreamPulse(aiMsgEl);
 
             // 在气泡中显示"思考中"
             let bubble = aiMsgEl.querySelector('.message-bubble');
@@ -553,6 +591,7 @@ async function sendMessage() {
             }
             if (bubble) {
                 bubble.innerHTML = '<span class="thinking-status"><span class="thinking-spinner"></span>思考中</span>';
+                if (window.Anim) window.Anim.startTypingDots(bubble);
             }
 
             // 逐块读取 SSE 事件
@@ -582,6 +621,7 @@ async function sendMessage() {
                             scrollToBottom();
                         } else if (data.type === 'done' || data.type === 'end') {
                             if (data.content) aiMessage.content = data.content;
+                            if (window.Anim) window.Anim.stopStreamPulse(aiMsgEl);
                             renderMessages();
                         } else if (data.type === 'error') {
                             throw new Error(data.content || data.message || 'AI 回复失败');
@@ -597,6 +637,7 @@ async function sendMessage() {
                 aiMessage.content = '（AI 未返回内容，请重试）';
                 renderMessages();
             }
+            if (window.Anim) window.Anim.stopStreamPulse(aiMsgEl);
         } else {
             // ===== 普通JSON回复（向后兼容）=====
             const res = await response.json();
@@ -610,7 +651,7 @@ async function sendMessage() {
                 timestamp: new Date().toISOString(),
             };
             chat.messages.push(aiMessage);
-            renderMessages();
+            renderMessages({ animateLast: true });
         }
 
         chat.updatedAt = new Date().toISOString();
@@ -637,6 +678,11 @@ async function sendMessage() {
         const sendBtn = document.getElementById('btn-send');
         if (sendBtn) sendBtn.disabled = false;
         document.getElementById('message-input').focus();
+        if (window.Anim) {
+            document.querySelectorAll('#message-list .message').forEach((el) => {
+                window.Anim.stopStreamPulse(el);
+            });
+        }
     }
 }
 

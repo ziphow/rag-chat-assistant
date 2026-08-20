@@ -39,54 +39,432 @@ body {
     height: 100vh;
 }
 
-/* ==================== 登录页面 ==================== */
+/* ==================== 登录页（长滚动落地页） ==================== */
 .login-page {
+    position: fixed;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #07070d;
+    color: #e2e8f0;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 顶部导航 */
+.lp-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+    padding: 0 40px;
+    background: rgba(7, 7, 13, 0.55);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lp-nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #f1f5f9;
+    letter-spacing: 0.2px;
+}
+
+.lp-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.lp-nav-link {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.lp-nav-link:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.lp-nav-cta {
+    padding: 9px 20px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lp-nav-cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+}
+
+/* Hero 主视觉 */
+.lp-hero {
+    position: relative;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px;
-}
-
-.login-card {
-    background: white;
-    border-radius: var(--radius-xl);
-    padding: 48px 40px;
-    width: 100%;
-    max-width: 440px;
-    box-shadow: var(--shadow-xl);
-    animation: fadeInUp 0.5s ease;
-}
-
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.login-header {
     text-align: center;
-    margin-bottom: 36px;
+    padding: 120px 24px 140px;
+    overflow: hidden;
 }
 
-.logo-icon {
+.lp-hero-bg {
+    position: absolute;
+    inset: -12%;
+    background-image: url('assets/material/web/hero-starry.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.5;
+    will-change: transform;
+}
+
+.lp-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(7, 7, 13, 0.55) 0%, rgba(7, 7, 13, 0.25) 45%, rgba(7, 7, 13, 0.98) 100%);
+    pointer-events: none;
+}
+
+.lp-hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 860px;
+}
+
+.lp-hero-title {
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: #ffffff;
+    margin-bottom: 24px;
+    text-shadow: 0 2px 40px rgba(0, 0, 0, 0.35);
+}
+
+.lp-hero-sub {
+    font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+    color: #a5b4cf;
+    line-height: 1.7;
+    max-width: 560px;
+    margin: 0 auto 40px;
+}
+
+.lp-hero-cta {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.lp-btn-primary {
+    padding: 15px 34px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lp-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(99, 102, 241, 0.5);
+}
+
+.lp-btn-ghost {
+    padding: 15px 34px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.lp-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.lp-scroll-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 36px;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.lp-scroll-hint svg {
+    animation: lpBounce 2s ease-in-out infinite;
+}
+
+@keyframes lpBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+}
+
+/* 通用 section */
+.lp-section {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 120px 40px;
+}
+
+.lp-section-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-align: center;
+    color: #f1f5f9;
+    margin-bottom: 14px;
+}
+
+.lp-section-desc {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 1.05rem;
+    margin-bottom: 64px;
+}
+
+/* 核心能力卡片 */
+.lp-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.lp-feature-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 34px 28px;
+    transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+}
+
+.lp-feature-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.lp-feature-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a5b4fc;
+    margin-bottom: 22px;
+}
+
+.lp-feature-card h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 10px;
+}
+
+.lp-feature-card p {
+    font-size: 0.92rem;
+    color: #94a3b8;
+    line-height: 1.7;
+}
+
+/* 滚动叙事：随滚动逐字点亮（CSS sticky 固定 + GSAP scrub） */
+.lp-story {
+    position: relative;
+    height: 300vh; /* 预留滚动距离，供 sticky 固定 */
+}
+
+.lp-story-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px;
+    overflow: hidden;
+}
+
+.lp-story-text {
+    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.18;
+    text-align: center;
+    color: #f1f5f9;
+}
+
+/* 逐字 span：由 GSAP 从暗到亮点亮 */
+.lp-story-text .wp {
+    display: inline-block;
+    opacity: 0.12;
+    will-change: opacity;
+}
+
+/* 分镜展示：全屏大图 + 文案（Apple 式左右分栏） */
+.lp-showcase--media {
+    position: relative;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 90px 40px;
+    min-height: 88vh;
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    align-items: center;
+    gap: 64px;
+}
+
+.lp-showcase-media {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    box-shadow: 0 40px 90px rgba(0, 0, 0, 0.55);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.lp-showcase-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
+    transform: scale(1.15);
+    will-change: transform;
+}
+
+.lp-showcase-copy {
+    max-width: 520px;
+}
+
+.lp-showcase-eyebrow {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #a5b4fc;
+    margin-bottom: 18px;
+}
+
+.lp-showcase-title {
+    font-size: clamp(1.9rem, 4vw, 3.1rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.22;
+    color: #ffffff;
+    margin-bottom: 22px;
+}
+
+.lp-showcase-desc {
+    font-size: 1.02rem;
+    line-height: 1.85;
+    color: #94a3b8;
+}
+
+/* 反向分镜：图片在右，文字在左 */
+.lp-showcase--reverse .lp-showcase-media {
+    order: 2;
+}
+
+.lp-showcase--reverse .lp-showcase-copy {
+    order: 1;
+    justify-self: end;
+    text-align: right;
+}
+
+/* 登录 / 注册区 */
+.lp-auth-section {
     display: flex;
     justify-content: center;
-    margin-bottom: 16px;
+    padding-top: 40px;
+    padding-bottom: 120px;
 }
 
-.login-header h1 {
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 8px;
+.lp-auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 22px;
+    padding: 40px 36px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
 }
 
-.login-header p {
-    font-size: 14px;
-    color: var(--text-secondary);
+.lp-auth-tabs {
+    display: flex;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 5px;
+    margin-bottom: 30px;
 }
 
+.lp-auth-tab {
+    flex: 1;
+    padding: 11px 0;
+    border: none;
+    border-radius: 9px;
+    background: none;
+    color: #94a3b8;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.lp-auth-tab.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* 通用表单（弹窗共用浅色；登录页深色覆盖） */
 .auth-form {
     display: flex;
     flex-direction: column;
@@ -113,6 +491,8 @@ body {
     transition: var(--transition);
     outline: none;
     font-family: inherit;
+    background: #fff;
+    color: var(--text-primary);
 }
 
 .form-group input:focus {
@@ -203,21 +583,96 @@ body {
     transform: translateY(0);
 }
 
-.auth-switch {
+/* 登录页深色表单覆盖 */
+.lp-auth-card .form-group label {
+    color: #cbd5e1;
+}
+
+.lp-auth-card .form-group input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+}
+
+.lp-auth-card .form-group input::placeholder {
+    color: #64748b;
+}
+
+.lp-auth-card .form-group input:focus {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+
+.lp-auth-card .toggle-password {
+    color: #94a3b8;
+}
+
+.lp-auth-card .toggle-password:hover {
+    color: #a5b4fc;
+}
+
+.lp-auth-card .checkbox-label {
+    color: #94a3b8;
+}
+
+.lp-auth-card .link-text {
+    color: #a5b4fc;
+}
+
+.lp-auth-card .btn-primary {
+    letter-spacing: 2px;
+    padding: 14px 24px;
+}
+
+/* 页脚 */
+.lp-footer {
     text-align: center;
+    padding: 48px 24px 56px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
     font-size: 14px;
-    color: var(--text-secondary);
+    line-height: 1.8;
 }
 
-.auth-switch a {
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: var(--transition);
+.lp-footer-meta {
+    color: #64748b;
+    font-size: 12.5px;
+    margin-top: 6px;
 }
 
-.auth-switch a:hover {
-    text-decoration: underline;
+/* 响应式 */
+@media (max-width: 900px) {
+    .lp-feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .lp-showcase--media {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding: 64px 24px;
+        min-height: 0;
+    }
+    .lp-showcase--reverse .lp-showcase-media,
+    .lp-showcase--reverse .lp-showcase-copy {
+        order: initial;
+        justify-self: start;
+        text-align: left;
+    }
+}
+
+@media (max-width: 560px) {
+    .lp-nav {
+        padding: 0 20px;
+    }
+    .lp-section {
+        padding: 80px 20px;
+    }
+    .lp-feature-grid {
+        grid-template-columns: 1fr;
+    }
+    .lp-hero-cta {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
 /* ==================== 聊天应用布局 ==================== */
@@ -321,16 +776,17 @@ body {
     padding: 12px 14px;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: var(--transition);
+    transition: background 0.2s ease;
     display: flex;
     align-items: center;
     gap: 10px;
     margin-bottom: 4px;
     position: relative;
+    will-change: transform;
 }
 
 .chat-history-item:hover {
-    background: var(--bg-main);
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.14), rgba(139, 92, 246, 0.04) 70%, transparent);
 }
 
 .chat-history-item.active {
@@ -390,6 +846,12 @@ body {
 .chat-action-btn:hover {
     background: var(--border-color);
     color: var(--text-primary);
+}
+
+.chat-action-btn.delete,
+.kb-action-btn.delete,
+.kb-doc-delete {
+    will-change: transform;
 }
 
 .chat-action-btn.delete:hover {
@@ -664,8 +1126,9 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: var(--transition);
+    transition: border-color var(--transition), box-shadow var(--transition);
     text-align: left;
+    will-change: transform, opacity;
 }
 
 .suggestion-card:hover {
@@ -701,12 +1164,7 @@ body {
     gap: 12px;
     padding: 8px 24px;
     margin-bottom: 8px;
-    animation: fadeInMessage 0.3s ease;
-}
-
-@keyframes fadeInMessage {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    will-change: transform, opacity;
 }
 
 .message-avatar {
@@ -749,6 +1207,7 @@ body {
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+    will-change: transform;
 }
 
 .message-bubble {
@@ -1020,20 +1479,7 @@ body {
     height: 6px;
     border-radius: 50%;
     background: var(--text-muted);
-    animation: typingBounce 1.4s infinite ease-in-out;
-}
-
-.typing-dots span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.typing-dots span:nth-child(3) {
-    animation-delay: 0.4s;
-}
-
-@keyframes typingBounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-    30% { transform: translateY(-6px); opacity: 1; }
+    will-change: transform, opacity;
 }
 
 /* 思考中状态（SSE 已连接，等待首个 chunk） */
@@ -1052,12 +1498,8 @@ body {
     border: 2px solid var(--border-color);
     border-top-color: var(--primary);
     border-radius: 50%;
-    animation: spin 0.8s linear infinite;
     flex-shrink: 0;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
+    will-change: transform;
 }
 
 /* ==================== 输入区 ==================== */
@@ -1085,6 +1527,7 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     max-width: 240px;
+    will-change: transform;
 }
 
 .file-preview.image-preview {
@@ -1134,11 +1577,11 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 10px;
-    transition: var(--transition);
+    will-change: transform;
 }
 
 .file-preview-remove:hover {
-    transform: scale(1.1);
+    background: #dc2626;
 }
 
 .input-wrapper {
@@ -1230,20 +1673,13 @@ body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: var(--transition);
     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
-}
-
-.btn-send:hover {
-    transform: scale(1.06);
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
+    will-change: transform;
 }
 
 .btn-send:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
 }
 
 .input-hint {
@@ -1255,7 +1691,9 @@ body {
 
 /* ==================== 拖拽上传遮罩 ==================== */
 .drag-drop-overlay {
-    display: none;
+    display: flex;
+    visibility: hidden;
+    opacity: 0;
     position: absolute;
     inset: 0;
     z-index: 100;
@@ -1268,12 +1706,13 @@ body {
 }
 
 .drag-drop-overlay.active {
-    display: flex;
+    visibility: visible;
 }
 
 .drag-drop-content {
     text-align: center;
     color: var(--primary);
+    will-change: transform, opacity;
 }
 
 .drag-drop-content p {
@@ -1299,18 +1738,13 @@ body {
 
 .image-modal.active {
     display: flex;
-    animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 .image-modal-content {
     position: relative;
     max-width: 90%;
     max-height: 90%;
+    will-change: transform, opacity;
 }
 
 .image-modal-content img {
@@ -1661,7 +2095,6 @@ body {
 
 .modal-overlay.active {
     display: flex;
-    animation: fadeIn 0.2s ease;
 }
 
 .modal-card {
@@ -1673,7 +2106,7 @@ body {
     display: flex;
     flex-direction: column;
     max-height: 85vh;
-    animation: fadeInUp 0.3s ease;
+    will-change: transform, opacity;
 }
 
 .modal-card.modal-lg {
@@ -1984,5 +2417,878 @@ body {
 
     .message {
         padding: 8px 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chat-history-item,
+    .suggestion-card,
+    .message,
+    .file-preview,
+    .btn-send,
+    .drag-drop-content,
+    .modal-card,
+    .image-modal-content,
+    .typing-dots span,
+    .thinking-status .thinking-spinner,
+    .file-preview-remove,
+    .message-content {
+        will-change: auto;
+    }
+
+    .suggestion-card:hover {
+        transform: none;
+    }
+}
+
+/* ==================== 聊天页暗色主题（与登录页风格统一） ==================== */
+:root {
+    --bg-main: #0b0c14;
+    --bg-sidebar: #0e0f18;
+    --bg-message-ai: #151722;
+    --text-primary: #e2e8f0;
+    --text-secondary: #9aa4b8;
+    --text-muted: #64748b;
+    --border-color: rgba(255, 255, 255, 0.09);
+    --border-hover: rgba(255, 255, 255, 0.18);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 12px 24px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 24px 40px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+/* 主聊天区顶部淡光，呼应登录页 Hero */
+.chat-main {
+    background:
+        radial-gradient(1200px 500px at 50% -10%, rgba(99, 102, 241, 0.08), transparent 60%),
+        var(--bg-main);
+}
+
+.chat-header {
+    background: var(--bg-sidebar);
+}
+
+.chat-input-area {
+    background: var(--bg-sidebar);
+}
+
+.form-group input {
+    background: #14151f;
+}
+
+.search-box input:focus {
+    background: #14151f;
+}
+
+.input-wrapper {
+    background: #14151f;
+}
+
+.suggestion-card,
+.msg-action-btn,
+.modal-card,
+.kb-selector-menu {
+    background: #151722;
+}
+
+/* 用户消息上的操作按钮保持白底深字，保证在渐变气泡上可读 */
+.message.user .msg-action-btn {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #475569;
+}
+
+.message.ai .message-avatar {
+    background: #252840;
+    color: #a5b4fc;
+}
+
+.message-bubble code {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.message-file {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.message-file:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.md-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.btn-logout:hover {
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+}
+
+.kb-selector-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.chat-history-item.active {
+    background: rgba(99, 102, 241, 0.16);
+}
+
+/* ==================== 图片素材升级：能力卡片 + 聊天欢迎区 ==================== */
+
+/* 能力卡片：顶部大图 + 正文（以图片代替纯图标，提升视觉丰富度） */
+.lp-feature-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.lp-feature-media {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.lp-feature-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.lp-feature-card:hover .lp-feature-media img {
+    transform: scale(1.07);
+}
+
+.lp-feature-body {
+    padding: 22px 24px 26px;
+}
+
+/* 聊天页欢迎区：发光插图 */
+.welcome-visual {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 24px;
+    border-radius: 32px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 24px 70px rgba(99, 102, 241, 0.35);
+}
+
+.welcome-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* 标语使用更具辨识度的展示字体 */
+.lp-story-text {
+    font-family: 'Sora', 'Inter', sans-serif;
+}
+
+/* ==================== 灵感画廊（仿 haowallpaper 瀑布流透明卡片） ==================== */
+
+.lp-gallery {
+    padding: 110px 40px 130px;
+    max-width: 1460px;
+    margin: 0 auto;
+}
+
+.lp-gallery-filters {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 34px 0 46px;
+}
+
+.g-filter {
+    padding: 9px 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: #9aa4b8;
+    font-size: 14px;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: color 0.25s, border-color 0.25s, background 0.25s;
+}
+
+.g-filter:hover {
+    color: #e2e8f0;
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.g-filter.active {
+    color: #ffffff;
+    background: rgba(99, 102, 241, 0.22);
+    border-color: rgba(129, 140, 248, 0.55);
+}
+
+/* 瀑布流：columns 自适应列数 */
+.lp-gallery-grid {
+    columns: 4 230px;
+    column-gap: 18px;
+}
+
+.g-card {
+    position: relative;
+    margin: 0 0 18px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    break-inside: avoid;
+    cursor: zoom-in;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.g-card:hover,
+.g-card:focus-visible {
+    transform: translateY(-5px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.5);
+    outline: none;
+}
+
+.g-card-media img {
+    width: 100%;
+    display: block;
+    transition: transform 0.55s ease;
+}
+
+.g-card:hover .g-card-media img {
+    transform: scale(1.06);
+}
+
+/* 右上角分辨率角标（常显，半透明） */
+.g-res {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(10, 12, 20, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #cbd5e1;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* 悬浮时底部渐显信息层 */
+.g-info {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 44px 16px 14px;
+    background: linear-gradient(to top, rgba(8, 9, 16, 0.9), rgba(8, 9, 16, 0));
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.g-card:hover .g-info,
+.g-card:focus-visible .g-info {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.g-title {
+    color: #f1f5f9;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.g-tags {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+/* ---------- 灯箱 ---------- */
+
+.g-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 5vh 4vw;
+}
+
+.g-lightbox.open {
+    display: flex;
+}
+
+.g-lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 6, 12, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.g-lightbox-body {
+    position: relative;
+    max-width: min(1200px, 92vw);
+    margin: 0;
+}
+
+.g-lightbox-body img {
+    width: 100%;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 16px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+    display: block;
+}
+
+.g-lightbox-body figcaption {
+    margin-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    color: #e2e8f0;
+    font-size: 14px;
+}
+
+.g-lightbox-meta {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.g-lightbox-close {
+    position: absolute;
+    top: 22px;
+    right: 26px;
+    z-index: 2;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: #e2e8f0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.25s, transform 0.25s;
+}
+
+.g-lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.16);
+    transform: rotate(90deg);
+}
+
+@media (max-width: 900px) {
+    .lp-gallery {
+        padding: 70px 20px 80px;
+    }
+
+    .lp-gallery-grid {
+        columns: 2 150px;
+        column-gap: 12px;
+    }
+
+    .g-card {
+        margin-bottom: 12px;
+        border-radius: 14px;
+    }
+}
+
+/* ==================== Hero 动态视频背景 ==================== */
+.lp-hero-bg {
+    opacity: 0.75;
+}
+
+.lp-hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    will-change: transform;
+}
+
+/* ==================== 画廊：动态角标 + 分辨率 + 灯箱视频 ==================== */
+.g-live-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: rgba(239, 68, 68, 0.88);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35);
+}
+
+.g-size {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.g-lightbox-body video {
+    display: block;
+    width: 100%;
+    max-height: 82vh;
+    border-radius: 16px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+    background: #000;
+}
+
+/* ==================== 头像按钮 + 选择弹层 ==================== */
+.avatar-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    border-radius: 50%;
+    background: none;
+    cursor: pointer;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatar-btn:hover {
+    border-color: #818cf8;
+    transform: scale(1.06);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
+}
+
+.avatar-btn .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+.avatar-picker {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.avatar-picker.open {
+    display: flex;
+}
+
+.avatar-picker-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 6, 12, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.avatar-picker-panel {
+    position: relative;
+    width: min(430px, 100%);
+    background: rgba(18, 20, 32, 0.88);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+}
+
+.avatar-picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.avatar-picker-head h3 {
+    color: #f1f5f9;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.avatar-picker-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: none;
+    color: #cbd5e1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.avatar-picker-close:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.avatar-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    padding: 14px 6px;
+    background: none;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.avatar-option:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.avatar-option.active {
+    border-color: #818cf8;
+    background: rgba(99, 102, 241, 0.16);
+}
+
+.avatar-option img {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+.avatar-option-name {
+    font-size: 12px;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.avatar-option.active .avatar-option-name {
+    color: #e2e8f0;
+    font-weight: 600;
+}
+
+/* ==================== 聊天主界面：壁纸背景 + 毛玻璃透明组件 ==================== */
+.chat-app {
+    position: relative;
+    background:
+        linear-gradient(180deg, rgba(7, 8, 15, 0.6) 0%, rgba(7, 8, 15, 0.74) 100%),
+        url('assets/material/web/hero-starry.jpg') center / cover no-repeat;
+}
+
+.sidebar {
+    background: rgba(13, 14, 24, 0.55);
+    backdrop-filter: blur(26px) saturate(140%);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+    border-right: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.chat-main {
+    background: transparent;
+}
+
+.chat-header {
+    background: rgba(13, 14, 24, 0.42);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.chat-input-area {
+    background: rgba(13, 14, 24, 0.42);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.message.ai .message-bubble {
+    background: rgba(21, 23, 34, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.suggestion-card {
+    background: rgba(21, 23, 34, 0.56);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.suggestion-card:hover {
+    border-color: #6366f1;
+}
+
+.input-wrapper {
+    background: rgba(20, 21, 31, 0.58);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.msg-action-btn {
+    background: rgba(21, 23, 34, 0.66);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-icon {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.search-box input {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+}
+
+.welcome-visual {
+    border-color: rgba(139, 92, 246, 0.45);
+    box-shadow: 0 24px 70px rgba(99, 102, 241, 0.45);
+}
+
+/* ==================== 登录页滚动背景（哲风壁纸交叉淡入） ==================== */
+.lp-bg-stack {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.lp-bg-stack::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(180deg, rgba(7, 7, 13, 0.5) 0%, rgba(7, 7, 13, 0.62) 55%, rgba(7, 7, 13, 0.8) 100%);
+}
+
+.lp-bg-layer {
+    position: absolute;
+    inset: -6%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    will-change: opacity, transform;
+    animation: lpBgZoom 46s ease-in-out infinite alternate;
+}
+
+@keyframes lpBgZoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.09); }
+}
+
+/* 内容层置于背景之上（导航 sticky 自身已有更高 z-index，保持不动） */
+.lp-hero,
+.lp-story,
+.lp-showcase--media,
+.lp-section,
+.lp-footer {
+    position: relative;
+    z-index: 1;
+}
+
+/* 能力卡片：玻璃透明 + 透出滚动壁纸 */
+.lp-feature-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* ==================== 滚动叙事标语：超大字号 + 渐变 + 逐词点亮 ==================== */
+.lp-story-text {
+    font-size: clamp(3.2rem, 9vw, 7.6rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.06;
+}
+
+.lp-story-text .wp {
+    display: inline-block;
+    opacity: 0.14;
+    will-change: opacity, transform, filter;
+    background: linear-gradient(120deg, #b6c2f5 0%, #ffffff 48%, #a78bfa 92%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #f1f5f9;
+}
+
+/* ==================== 卡片聚光灯（灯光跟随鼠标/手指） ==================== */
+.lp-feature-card::before,
+.g-card::before,
+.suggestion-card::before,
+.lp-auth-card::before,
+.lp-showcase-media::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 50%), rgba(139, 92, 246, 0.26), transparent 66%);
+}
+
+.lp-feature-card:hover::before,
+.g-card:hover::before,
+.suggestion-card:hover::before,
+.lp-auth-card:hover::before,
+.lp-showcase-media:hover::before {
+    opacity: 1;
+}
+
+.suggestion-card,
+.lp-auth-card {
+    position: relative;
+    overflow: hidden;
+}
+
+/* ==================== 按钮高光扫过 ==================== */
+.lp-btn-primary,
+.lp-nav-cta,
+.btn-send {
+    position: relative;
+    overflow: hidden;
+}
+
+.lp-btn-primary::after,
+.lp-nav-cta::after,
+.btn-send::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 46%;
+    height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.32), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.55s ease;
+    pointer-events: none;
+}
+
+.lp-btn-primary:hover::after,
+.lp-nav-cta:hover::after,
+.btn-send:hover::after {
+    left: 132%;
+}
+
+/* ==================== 聊天主界面：各模块独立壁纸 + 更高透明 ==================== */
+.chat-app {
+    background: #07070d;
+}
+
+.sidebar {
+    background:
+        linear-gradient(180deg, rgba(10, 11, 20, 0.74) 0%, rgba(10, 11, 20, 0.88) 100%),
+        url('assets/material/web/bg-cloud-night.jpg') center / cover no-repeat;
+    border-right: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.chat-main {
+    background:
+        linear-gradient(180deg, rgba(10, 11, 20, 0.66) 0%, rgba(10, 11, 20, 0.84) 100%),
+        url('assets/material/web/bg-reflection.jpg') center / cover no-repeat;
+}
+
+.chat-header {
+    background: rgba(11, 12, 22, 0.34);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.chat-input-area {
+    background: rgba(11, 12, 22, 0.34);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.message.ai .message-bubble {
+    background: rgba(21, 23, 34, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.suggestion-card {
+    background: rgba(21, 23, 34, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.input-wrapper {
+    background: rgba(20, 21, 31, 0.44);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.msg-action-btn {
+    background: rgba(21, 23, 34, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-icon {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.modal-card {
+    background: rgba(19, 21, 33, 0.78);
+    backdrop-filter: blur(26px) saturate(140%);
+    -webkit-backdrop-filter: blur(26px) saturate(140%);
+}
+
+.kb-selector-menu {
+    background: rgba(19, 21, 33, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lp-bg-layer {
+        animation: none;
     }
 }

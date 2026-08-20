@@ -98,6 +98,10 @@ async function handlePaste(event) {
 
 function handleDragOver(event) {
     event.preventDefault();
+    if (window.Anim && window.Anim.showDragOverlay) {
+        window.Anim.showDragOverlay();
+        return;
+    }
     const overlay = document.getElementById('drag-drop-overlay');
     if (overlay) overlay.classList.add('active');
 }
@@ -108,14 +112,22 @@ function handleDragLeave(event) {
     if (event.relatedTarget && chatMain && chatMain.contains(event.relatedTarget)) {
         return;
     }
+    if (window.Anim && window.Anim.hideDragOverlay) {
+        window.Anim.hideDragOverlay();
+        return;
+    }
     const overlay = document.getElementById('drag-drop-overlay');
     if (overlay) overlay.classList.remove('active');
 }
 
 async function handleDrop(event) {
     event.preventDefault();
-    const overlay = document.getElementById('drag-drop-overlay');
-    if (overlay) overlay.classList.remove('active');
+    if (window.Anim && window.Anim.hideDragOverlay) {
+        window.Anim.hideDragOverlay();
+    } else {
+        const overlay = document.getElementById('drag-drop-overlay');
+        if (overlay) overlay.classList.remove('active');
+    }
 
     const files = event.dataTransfer?.files;
     if (!files || files.length === 0) return;
@@ -203,12 +215,21 @@ function openImageModal(url) {
     const modal = document.getElementById('image-modal');
     const modalImg = document.getElementById('modal-image');
     modalImg.src = url;
+    if (window.Anim && window.Anim.openImageModal) {
+        window.Anim.openImageModal(modal);
+        return;
+    }
     modal.classList.add('active');
 }
 
 function closeImageModal(event) {
     if (event && event.target !== event.currentTarget) return;
-    document.getElementById('image-modal').classList.remove('active');
+    const modal = document.getElementById('image-modal');
+    if (window.Anim && window.Anim.closeImageModal) {
+        window.Anim.closeImageModal(modal);
+        return;
+    }
+    modal.classList.remove('active');
 }
 
 // ==================== 文件下载 ====================
