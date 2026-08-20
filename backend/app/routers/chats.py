@@ -152,7 +152,7 @@ async def update_chat(chat_id: int,new_title:NewTitle,
 
 from app.Schemas.model import UserMessage
 from app.ai.title_generator import get_new_title
-@router.get("/chats/{chat_id}/craete_title")
+@router.get("/chats/{chat_id}/create_title")
 async def create_title(chat_id: int,
                         current_user: User = Depends(get_current_user),
                         session=Depends(get_session)):
@@ -185,4 +185,77 @@ async def create_title(chat_id: int,
             "id": chat.id,
             "title": chat.title
         }
+    }
+
+
+# ===================================================================
+# 【后端新增】文件查询接口
+#   GET /files/sent            本用户所有对话中发送的文件（按对话分组）
+#   GET /chats/{chat_id}/files 单个对话中发送的文件
+# ===================================================================
+
+@router.get("/files/sent")
+async def list_sent_files(current_user: User = Depends(get_current_user),
+                          session=Depends(get_session)):
+    """获取当前用户所有对话中作为消息发送的文件（图片 + 文件），按对话分组返回。"""
+    # 联表查询该用户所有 user 消息（images / files 为 JSON 字段）
+    stmt = (
+        select(Message, Chat.title)
+        .join(Chat, Message.chat_id == Chat.id)
+        .where(Chat.user_id == current_user.id)
+        .where(Message.role == "user")
+        .order_by(Message.created_at.desc())
+    )
+    rows = (await session.exec(stmt)).all()
+
+    # 按对话分组聚合图片与文件
+    grouped = {}
+    for msg, chat_title in rows:
+        if not msg.images and not msg.files:
+            continue
+        if msg.chat_id not in grouped:
+            grouped[msg.chat_id] = {
+                "chat_id": msg.chat_id,
+                "chat_title": chat_title,
+                "images": [],
+                "files": [],
+            }
+        grouped[msg.chat_id]["images"].extend(msg.images or [])
+        grouped[msg.chat_id]["files"].extend(msg.files or [])
+
+    return {
+        "code": 200,
+        "message": "成功",
+        "data": list(grouped.values()),
+    }
+
+
+@router.get("/chats/{chat_id}/files")
+async def list_chat_files(chat_id: int,
+                          current_user: User = Depends(get_current_user),
+                          session=Depends(get_session)):
+    """获取单个对话中作为消息发送的文件（图片 + 文件）。"""
+    # 先校验对话归属权
+    chat = (await session.exec(select(Chat).where(Chat.id == chat_id))).first()
+    if chat is None or chat.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="对话不存在")
+
+    stmt = (
+        select(Message)
+        .where(Message.chat_id == chat_id, Message.role == "user")
+        .order_by(Message.created_at.desc())
+    )
+    rows = (await session.exec(stmt)).all()
+
+    images, files = [], []
+    for msg in rows:
+        if msg.images:
+            images.extend(msg.images)
+        if msg.files:
+            files.extend(msg.files)
+
+    return {
+        "code": 200,
+        "message": "成功",
+        "data": {"chat_title": chat.title, "images": images, "files": files},
     }
