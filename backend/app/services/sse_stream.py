@@ -1,5 +1,5 @@
 import json
-
+from rich import print as rprint
 from langchain_core.messages import AIMessageChunk, HumanMessage
 
 from sqlalchemy import select
@@ -38,14 +38,19 @@ async def event_stream(
         if (await session.exec(
                 select(KnowledgeDocuments).where(KnowledgeDocuments.kb_id == kb_id)
             )).first():
-            # 1. 检索相关文档片段
-            relevant_chunks = await retrieve_relevant_docs(kb_id, user_content)
-            # 2. 生成资料结果
-            rag_content = "\n\n".join(relevant_chunks) + "\n\n 资料结束，请回答用户问题(可能为文字，图片，文件中的一个或多个)： \n\n"
-            # 3、动态追加系统提示词
-            temp_instruction = """
-            用户引用了知识库，代码会将RAG资料（可能因为某种原因为空）拼接到用户发送的消息中（用户不会看到）,请基于这些内容回答问题。
-            """
+            try:
+                # 1. 检索相关文档片段
+                relevant_chunks = await retrieve_relevant_docs(kb_id, user_content)
+                # 2. 生成资料结果
+                rag_content = "\n\n".join(relevant_chunks) + "\n\n 资料结束，请回答用户问题(可能为文字，图片，文件中的一个或多个)： \n\n"
+                # 3、动态追加系统提示词
+                temp_instruction = """
+                用户引用了知识库，代码会将RAG资料（可能因为某种原因为空）拼接到用户发送的消息中（用户不会看到）,请基于这些内容回答问题。
+                """
+            except Exception as e:
+                rprint(f"[red]RAG检索失败: {e}[/red]")
+                rag_content = "知识库检索失败，请直接回答用户问题。"
+                temp_instruction = "知识库检索失败，请直接回答用户问题。"
         else :
             rag_content = "用户引用了知识库，但知识库还没有任何文档，请在回复时说明这个问题。另外，请上网检索资料来回答用户问题。"
     # 拼接消息
