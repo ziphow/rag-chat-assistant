@@ -7,7 +7,8 @@ from sqlalchemy import select
 from app.database import Message ,KnowledgeDocuments
 from app.Schemas.model import UserMessage
 from app.ai.agent import get_agent,AgentContext
-from app.services.image_utils import image_url_to_base64
+# ★ [后端修改] 新增 file_url_to_text 导入，用于将非图片文件转为文本供 AI 分析
+from app.services.image_utils import image_url_to_base64, file_url_to_text
 from app.rag.rag import retrieve_relevant_docs
 
 async def event_stream(message : UserMessage,session,):
@@ -26,8 +27,15 @@ async def event_stream(message : UserMessage,session,):
                 "type": "image_url",
                 "image_url": {"url": image_url_to_base64(img.url)}
             })
+    # ★ [后端修改] 处理用户上传的非图片文件：调用 file_url_to_text 将文件内容转为文本，
+    #   作为 text 类型 content_block 添加到消息上下文中，供 AI 分析
     if message.files:
-        pass
+        for f in message.files:
+            file_text = await file_url_to_text(f.url, f.name)
+            content_blocks.append({
+                "type": "text",
+                "text": f"[文件 {f.name} 的内容]\n{file_text}\n[文件内容结束]"
+            })
     if message.kb_id:
         if (await session.exec(
                 select(KnowledgeDocuments).where(KnowledgeDocuments.kb_id == message.kb_id)
