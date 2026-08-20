@@ -138,3 +138,16 @@ async def get_agent():
         #response_format=AnswerInfo, # 结构化输出
     )
     return _agent
+
+# ------------------------------- 删除对话记忆的函数 ---------------------------------
+import aiosqlite
+
+async def delete_checkpoints(thread_id: int):
+    """删除 LangGraph checkpointer 中指定 thread_id 的记忆数据"""
+    db_path = "data/checkpoint/checkpoint.db"
+    if not os.path.exists(db_path):
+        return
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute("DELETE FROM checkpoints WHERE thread_id = ?", (str(thread_id),))
+        await db.execute("DELETE FROM writes WHERE thread_id = ?", (str(thread_id),))
+        await db.commit()
