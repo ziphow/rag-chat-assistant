@@ -619,7 +619,7 @@ async function sendMessage() {
         // 新对话第一轮交流后，调用后端生成标题
         if (isNewChat) {
             try {
-                const titleRes = await request(`/chats/${chat.id}/craete_title`, { method: 'GET' });
+                const titleRes = await request(`/chats/${chat.id}/create_title`, { method: 'GET' });
                 if (titleRes.data && titleRes.data.title) {
                     chat.title = titleRes.data.title;
                     document.getElementById('current-chat-title').textContent = chat.title;

@@ -578,20 +578,22 @@ body {
 }
 
 .btn-icon {
-    background: none;
-    border: none;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
     cursor: pointer;
     padding: 8px;
     border-radius: var(--radius-sm);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     transition: var(--transition);
     display: flex;
     align-items: center;
 }
 
 .btn-icon:hover {
-    background: var(--bg-main);
-    color: var(--text-primary);
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 /* ==================== 消息列表 ==================== */
@@ -1217,8 +1219,8 @@ body {
 }
 
 .btn-send {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
@@ -1229,11 +1231,12 @@ body {
     justify-content: center;
     flex-shrink: 0;
     transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
 }
 
 .btn-send:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    transform: scale(1.06);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
 }
 
 .btn-send:disabled {
@@ -1881,6 +1884,77 @@ body {
     padding: 32px 16px;
     color: var(--text-muted);
     font-size: 13px;
+}
+
+/* ==================== 已发送文件弹窗 ==================== */
+.sent-files-empty {
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.sent-files-group-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 20px 0 12px;
+    padding-left: 10px;
+    border-left: 3px solid var(--primary);
+}
+
+.sent-files-group-title:first-child {
+    margin-top: 0;
+}
+
+.sent-files-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.sent-image-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sent-image-item img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.sent-image-item img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sent-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sent-file-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.sent-file-item:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.04);
 }
 
 /* ==================== 响应式 ==================== */

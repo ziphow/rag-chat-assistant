@@ -2,7 +2,8 @@
  * markdown.js — 轻量 Markdown 渲染器
  *
  * 支持：代码块、行内代码、标题、加粗、斜体、
- *       无序列表、有序列表、表格、引用、链接、分隔线
+ *       无序列表、有序列表、表格、引用、链接、分隔线、
+ *       数学公式（KaTeX：$...$ 行内 / $$...$$ 块级）
  *
  * 注意：这是简易实现，不是完整的 Markdown 解析器。
  *       对于 AI 回复内容足够使用，复杂文档建议用 marked.js 等库。
@@ -16,9 +17,22 @@
 function renderMarkdown(text) {
     if (!text) return '';
 
+    // 0. 先提取数学公式（$$...$$ 块级、$...$ 行内），避免被后续规则破坏
+    const mathBlocks = [];
+    let html = text.replace(/\$\$([\s\S]+?)\$\$/g, (match, formula) => {
+        const ph = `__MATHBLOCK_${mathBlocks.length}__`;
+        mathBlocks.push({ ph, formula: formula.trim(), display: true });
+        return ph;
+    });
+    html = html.replace(/\$([^$\n]+?)\$/g, (match, formula) => {
+        const ph = `__MATHBLOCK_${mathBlocks.length}__`;
+        mathBlocks.push({ ph, formula: formula.trim(), display: false });
+        return ph;
+    });
+
     // 1. 先提取代码块，避免内部内容被其他规则破坏
     const codeBlocks = [];
-    let html = escapeHtml(text);
+    html = escapeHtml(html);
     html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
         const placeholder = `__CODEBLOCK_${codeBlocks.length}__`;
         codeBlocks.push({ placeholder, lang, code: code.trim() });
@@ -101,6 +115,20 @@ function renderMarkdown(text) {
     // 13. 还原代码块
     codeBlocks.forEach(item => {
         html = html.replace(item.placeholder, `<pre><code>${item.code}</code></pre>`);
+    });
+
+    // 14. 还原数学公式（用 KaTeX 渲染，失败则回退为转义后的原文）
+    mathBlocks.forEach(item => {
+        let rendered;
+        try {
+            rendered = katex.renderToString(item.formula, {
+                throwOnError: false,
+                displayMode: item.display,
+            });
+        } catch (e) {
+            rendered = escapeHtml(item.formula);
+        }
+        html = html.split(item.ph).join(rendered);
     });
 
     return html;
