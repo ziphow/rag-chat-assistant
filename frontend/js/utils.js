@@ -63,7 +63,7 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
 
-    const icons = { success: '✓', error: '✕', info: 'ℹ' };
+    const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
     toast.innerHTML = `<span>${icons[type] || ''}</span> ${escapeHtml(message)}`;
     container.appendChild(toast);
 

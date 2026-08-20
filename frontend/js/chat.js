@@ -12,17 +12,18 @@
 
 /** 所有提示语（每次进入新对话随机选 4 条展示） */
 const SUGGESTIONS = [
-    { icon: '✍️', title: '写一首诗', text: '帮我写一首关于春天的诗' },
-    { icon: '💡', title: '知识问答', text: '请解释什么是机器学习' },
-    { icon: '📋', title: '制定计划', text: '帮我制定一个 Python 学习计划' },
-    { icon: '🖼️', title: '图片分析', text: '上传一张图片，我来帮你分析内容' },
-    { icon: '🔍', title: '网页搜索', text: '今天的科技新闻有哪些？' },
+    { icon: '✍️', title: '写一首诗', text: '帮我写一首关于春天的诗，要有意境和韵律' },
+    { icon: '💡', title: '知识问答', text: '请解释什么是机器学习中的梯度下降算法' },
+    { icon: '📋', title: '制定计划', text: '帮我制定一个为期三个月的 Python 全栈学习计划' },
+    { icon: '🖼️', title: '图片分析', text: '上传一张图片，我来帮你分析其中的内容' },
+    { icon: '🔍', title: '网页搜索', text: '帮我搜索今天科技领域的最新新闻' },
     { icon: '📚', title: '知识库问答', text: '选择一个知识库，然后向我提问文档中的内容' },
-    { icon: '💻', title: '代码助手', text: '帮我写一个 FastAPI 的 CORS 中间件配置' },
-    { icon: '🌐', title: '翻译文本', text: '请把"你好，世界"翻译成英文、日文和韩文' },
-    { icon: '📊', title: '数据整理', text: '帮我把这段文字整理成表格格式' },
-    { icon: '🧠', title: '头脑风暴', text: '帮我构思一个移动端 App 的产品创意' },
-    { icon: '📝', title: '文章润色', text: '帮我润色一段文字，使其更专业' },
+    { icon: '💻', title: '代码助手', text: '帮我写一个 FastAPI 的 CORS 中间件配置，并解释每行代码的作用' },
+    { icon: '📊', title: '数据整理', text: '帮我把一段杂乱的文字整理成结构化的表格格式' },
+    { icon: '🧠', title: '头脑风暴', text: '帮我构思一个面向大学生的移动端 App 产品创意，包含核心功能和盈利模式' },
+    { icon: '📝', title: '文章润色', text: '帮我润色一段技术博客的草稿，使其更专业更易读' },
+    { icon: '🤔', title: '对比分析', text: '帮我对比分析 React 和 Vue 的优缺点，给出选型建议' },
+    { icon: '🐛', title: '调试求助', text: '我遇到一个 Python 报错：KeyError: 0，帮我分析可能的原因' },
 ];
 
 /** 随机选取 n 条不重复的提示语 */
@@ -431,8 +432,9 @@ async function sendMessage() {
     const inputEl = document.getElementById('message-input');
     const text = inputEl.value.trim();
 
+    // 无效内容校验：纯空格/空内容且无文件时阻止发送
     if (!text && state.selectedFiles.length === 0) {
-        showToast('请输入消息或上传文件', 'info');
+        showToast('请输入消息内容或上传文件', 'info');
         return;
     }
     if (state.isWaitingResponse) {

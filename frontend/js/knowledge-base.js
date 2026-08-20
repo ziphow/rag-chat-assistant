@@ -206,11 +206,18 @@ async function handleKbDocUpload(event) {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            await request(`/knowledge-bases/${state.currentDetailKbId}/documents`, {
+            const res = await request(`/knowledge-bases/${state.currentDetailKbId}/documents`, {
                 method: 'POST',
                 body: formData,
             });
-            showToast(`${file.name} 上传成功`, 'success');
+            // 后端同步处理完毕，根据返回状态提示
+            if (res.data && res.data.status === 'success') {
+                showToast(`${file.name} 处理完成`, 'success');
+            } else if (res.data && res.data.status === 'failed') {
+                showToast(`${file.name} 处理失败`, 'error');
+            } else {
+                showToast(`${file.name} 上传成功，处理中...`, 'info');
+            }
         } catch (err) {
             showToast(`${file.name} 上传失败: ${err.message}`, 'error');
         }
@@ -218,6 +225,74 @@ async function handleKbDocUpload(event) {
 
     await loadKbDocuments(state.currentDetailKbId);
     loadKnowledgeBases();
+
+    // 如果仍有 processing 状态的文档，启动轮询
+    pollKbDocumentStatus();
+}
+
+/** 轮询知识库文档状态，直到所有文档不再是 processing */
+let kbPollingTimer = null;
+function pollKbDocumentStatus() {
+    if (kbPollingTimer) clearTimeout(kbPollingTimer);
+
+    kbPollingTimer = setTimeout(async () => {
+        try {
+            const res = await request(`/knowledge-bases/${state.currentDetailKbId}/documents`);
+            const docs = res.data || [];
+            const hasProcessing = docs.some(d => d.status === 'processing');
+
+            // 刷新文档列表
+            renderKbDocumentList(docs);
+
+            if (hasProcessing) {
+                // 还有处理中的文档，继续轮询
+                pollKbDocumentStatus();
+            } else {
+                // 全部处理完毕，刷新知识库计数
+                loadKnowledgeBases();
+            }
+        } catch (err) {
+            // 轮询出错则停止
+        }
+    }, 3000);
+}
+
+/** 仅渲染文档列表（不重新请求） */
+function renderKbDocumentList(docs) {
+    const listEl = document.getElementById('kb-doc-list');
+    if (!listEl) return;
+
+    if (!docs || docs.length === 0) {
+        listEl.innerHTML = '<div class="kb-doc-empty">暂无文档，点击上方按钮上传</div>';
+        return;
+    }
+
+    listEl.innerHTML = '';
+    docs.forEach(doc => {
+        const item = document.createElement('div');
+        item.className = 'kb-doc-item';
+        const ext = (doc.filename || doc.name || '').split('.').pop().toUpperCase().slice(0, 4);
+        const statusText = doc.status === 'success' || doc.status === 'ready'
+            ? '已就绪'
+            : doc.status === 'processing' ? '处理中' : '失败';
+        item.innerHTML = `
+            <div class="kb-doc-icon">${ext}</div>
+            <div class="kb-doc-info">
+                <div class="kb-doc-name">${escapeHtml(doc.filename || doc.name)}</div>
+                <div class="kb-doc-meta">
+                    <span>${formatFileSize(doc.fileSize || doc.file_size)}</span>
+                    <span class="kb-doc-status ${doc.status}">${statusText}</span>
+                </div>
+            </div>
+            <button class="kb-doc-delete" onclick="deleteKbDocument(${doc.id})" title="删除">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+            </button>
+        `;
+        listEl.appendChild(item);
+    });
 }
 
 /**
@@ -279,6 +354,12 @@ function selectKbForChat(kbId) {
         const kb = state.knowledgeBases.find(k => k.id === kbId);
         labelEl.textContent = kb ? kb.name : '未知知识库';
         btnEl.classList.add('active');
+
+        // 知识库无文档时提醒（不阻止操作）
+        const docCount = kb ? (kb.documentCount || kb.doc_count || 0) : 0;
+        if (docCount === 0) {
+            showToast(`知识库「${kb ? kb.name : '未知'}」还没有文档，回答将不会使用知识库内容`, 'warning');
+        }
     } else {
         labelEl.textContent = '不使用知识库';
         btnEl.classList.remove('active');
