@@ -67,3 +67,33 @@ async def file_url_to_text(url, name):
         # txt / md / 其他文本格式，统一用 utf-8 读取
         with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
+
+
+# ==================== 文件删除 ====================
+
+def delete_files_from_messages(messages):
+    """
+    从一批消息中收集所有图片和文件的本地路径，删除磁盘上的对应文件。
+    非本地 URL 或文件不存在的情况静默忽略，不抛异常。
+
+    :param messages: Message 对象列表（含 images / files 两个 JSON 字段）
+    """
+    import os
+    paths = set()
+    for msg in messages:
+        for img in (msg.images or []):
+            p = _extract_local_path(img.get("url"))
+            if p:
+                paths.add(p)
+        for f in (msg.files or []):
+            p = _extract_local_path(f.get("url"))
+            if p:
+                paths.add(p)
+
+    for path in paths:
+        try:
+            if os.path.isfile(path):
+                os.remove(path)
+        except OSError:
+            # 删除失败不影响主流程
+            pass

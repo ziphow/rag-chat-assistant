@@ -6,6 +6,7 @@ from sqlalchemy import func
 from app.database import get_session,User,Chat,Message
 from app.dependencies import get_current_user
 from app.ai.agent import delete_checkpoints
+from app.services.file_utils import delete_files_from_messages
 
 router = APIRouter()
 
@@ -88,6 +89,10 @@ async def delete_chat(chat_id: int,
     if chat is None or chat.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="对话不存在")
 
+    # ★ [后端修改] 删除对话时，先收集消息中所有图片/文件 URL，清理磁盘上的本地文件
+    msgs = (await session.exec(select(Message).where(Message.chat_id == chat_id))).all()
+    delete_files_from_messages(msgs)
+
     # 清理 数据库 记录
     await session.exec(
         delete(Message).where(Message.chat_id == chat_id)
@@ -113,6 +118,11 @@ async def delete_messages(chat_id: int,
     chat = (await session.exec(select(Chat).where(Chat.id == chat_id))).first()
     if chat is None or chat.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="对话不存在")
+
+    # ★ [后端修改] 清空消息时，先收集消息中所有图片/文件 URL，清理磁盘上的本地文件
+    msgs = (await session.exec(select(Message).where(Message.chat_id == chat_id))).all()
+    delete_files_from_messages(msgs)
+
     # 清理 数据库 记录
     await session.exec(
         delete(Message).where(Message.chat_id == chat_id)

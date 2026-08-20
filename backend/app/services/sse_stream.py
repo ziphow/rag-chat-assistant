@@ -8,7 +8,7 @@ from app.database import Message ,KnowledgeDocuments
 from app.Schemas.model import UserMessage
 from app.ai.agent import get_agent,AgentContext
 # ★ [后端修改] 新增 file_url_to_text 导入，用于将非图片文件转为文本供 AI 分析
-from app.services.image_utils import image_url_to_base64, file_url_to_text
+from app.services.file_utils import image_url_to_base64, file_url_to_text
 from app.rag.rag import retrieve_relevant_docs
 
 async def event_stream(message : UserMessage,session,):
