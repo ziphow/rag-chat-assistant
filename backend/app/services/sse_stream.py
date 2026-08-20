@@ -37,7 +37,7 @@ async def event_stream(
     if kb_id:
         if (await session.exec(
                 select(KnowledgeDocuments).where(KnowledgeDocuments.kb_id == kb_id)
-            )).one_or_none():
+            )).first():
             # 1. 检索相关文档片段
             relevant_chunks = await retrieve_relevant_docs(kb_id, user_content)
             # 2. 生成资料结果

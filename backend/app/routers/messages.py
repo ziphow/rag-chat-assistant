@@ -3,10 +3,10 @@ from fastapi.responses import StreamingResponse
 
 from datetime import datetime
 
-from sqlmodel import select, Field
+from sqlmodel import select, Field, func
 from pydantic import BaseModel
 
-from app.database import get_session,User,Chat,Message,KnowledgeBases,KnowledgeDocuments
+from app.database import get_session,User,Chat,Message,KnowledgeBases,KnowledgeDocuments,DocStatus
 from app.dependencies import get_current_user
 from app.services.sse_stream import event_stream
 router = APIRouter()
@@ -43,6 +43,17 @@ async def send_messages(message: UserMessages,
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="知识库不存在")
         if kb.user_id != current_user.id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="无权访问该知识库！")
+        # 检查是否有处理中文档，有则拒绝
+        processing_count = (await session.exec(
+            select(func.count(KnowledgeDocuments.id))
+            .where(KnowledgeDocuments.kb_id == message.kb_id)
+            .where(KnowledgeDocuments.status == DocStatus.processing)
+        )).one()
+        if processing_count > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="知识库中有文档正在处理中，请等待处理完成后再发送消息"
+            )
 
     # 1. 保存用户消息
     user_message = Message(

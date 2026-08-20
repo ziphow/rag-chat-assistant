@@ -3,13 +3,13 @@ import asyncio
 from pathlib import Path
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, status,UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status,UploadFile, BackgroundTasks
 
 from sqlmodel import select, delete,Field,func
 from pydantic import BaseModel
 from typing import Optional
 
-from app.database import get_session, KnowledgeBases, KnowledgeDocuments, User, DocStatus
+from app.database import get_session, KnowledgeBases, KnowledgeDocuments, User, DocStatus, engine
 from app.rag.document_loader import load_and_split
 from app.rag.vector_store import get_vectorstore,delete_vectorstore_collection
 from app.dependencies import get_current_user
@@ -81,6 +81,7 @@ async def get_knowledge_bases(current_user: User = Depends(get_current_user),
 @router.post("/knowledge-bases/{kb_id}/documents")
 async def upload_document(kb_id: int,
                           file: UploadFile,
+                          background_tasks: BackgroundTasks,
                           current_user=Depends(get_current_user),
                           session=Depends(get_session)):
     # 0. 验证知识库是否归属该用户
@@ -95,7 +96,7 @@ async def upload_document(kb_id: int,
     with open(save_path, "wb") as f:
         f.write(await file.read())
 
-    # 2. 先创建数据库记录，状态为 processing
+    # 2. 创建数据库记录，状态为 processing，立即提交
     doc = KnowledgeDocuments(
         kb_id = kb_id,
         filename = file.filename,
@@ -106,37 +107,50 @@ async def upload_document(kb_id: int,
     )
     session.add(doc)
     await session.flush()
+    await session.commit()
 
-    # 3. 加载并分块 + 存入向量数据库（可能耗时较长）
-    try:
-        chunks = await load_and_split(save_path)
-        for chunk in chunks:
-            chunk.metadata["source"] = save_path
-        vectorstore = get_vectorstore(kb_id)
-        for i in range(0, len(chunks), 20):  # 分批存入
-            await vectorstore.aadd_documents(chunks[i:i + 20])
+    # 3. 后台处理文档（不阻塞响应）
+    background_tasks.add_task(
+        process_document, doc.id, save_path, file.filename, kb_id
+    )
 
-        # 4. 处理成功，更新状态
-        doc.status = DocStatus.success
-        doc.chunk_count = len(chunks)
-        await session.flush()
-    except Exception as e:
-        # 处理失败，更新状态
-        doc.status = DocStatus.failed
-        await session.flush()
-        rprint(f"[red]文档处理失败: {file.filename} - {e}[/red]")
-
+    # 4. 立即返回 processing 状态
     return {
         "code": 200,
-        "message": "上传成功" if doc.status == DocStatus.success else "处理失败",
+        "message": "文档上传成功，正在处理中",
         "data": {
             "id": doc.id,
             "filename":doc.filename,
             "fileSize": doc.file_size,
-            "status": doc.status,
+            "status": "processing",
             "created_at": doc.created_at,
         }
     }
+
+
+async def process_document(doc_id: int, file_path: str, filename: str, kb_id: int):
+    """后台处理文档：加载、分块、向量化"""
+    from sqlmodel.ext.asyncio.session import AsyncSession
+    async with AsyncSession(engine, expire_on_commit=False) as session:
+        try:
+            chunks = await load_and_split(file_path)
+            for chunk in chunks:
+                chunk.metadata["source"] = file_path
+            vectorstore = get_vectorstore(kb_id)
+            for i in range(0, len(chunks), 20):
+                await vectorstore.aadd_documents(chunks[i:i + 20])
+
+            doc = await session.get(KnowledgeDocuments, doc_id)
+            doc.status = DocStatus.success
+            doc.chunk_count = len(chunks)
+            await session.commit()
+            rprint(f"[green]文档处理成功: {filename}[/green]")
+        except Exception as e:
+            doc = await session.get(KnowledgeDocuments, doc_id)
+            if doc:
+                doc.status = DocStatus.failed
+                await session.commit()
+            rprint(f"[red]文档处理失败: {filename} - {e}[/red]")
 
 
 # 获取文档列表
