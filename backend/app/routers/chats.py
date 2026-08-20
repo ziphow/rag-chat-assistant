@@ -150,6 +150,7 @@ async def update_chat(chat_id: int,new_title:NewTitle,
     }
 
 
+from app.Schemas.model import UserMessage
 from app.ai.title_generator import get_new_title
 @router.get("/chats/{chat_id}/craete_title")
 async def create_title(chat_id: int,
@@ -160,10 +161,17 @@ async def create_title(chat_id: int,
     if chat is None or chat.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="对话不存在")
 
-    stmt = select(Message.content).where(Message.chat_id == chat_id,Message.role=="user")
+    stmt = select(Message).where(Message.chat_id == chat_id,Message.role=="user")
     res = (await session.exec(stmt)).first()
-    print(type(res))
-    new_title = get_new_title(res)
+
+    user_message = UserMessage(
+        chat_id=chat_id,
+        content = res.content,
+        images=res.images,
+        files=res.files,
+    )
+
+    new_title = get_new_title(user_message)
 
     chat = await session.get(Chat, chat.id)
     if chat:

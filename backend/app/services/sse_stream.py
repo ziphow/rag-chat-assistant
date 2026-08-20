@@ -5,18 +5,12 @@ from langchain_core.messages import AIMessageChunk, HumanMessage
 from sqlalchemy import select
 
 from app.database import Message ,KnowledgeDocuments
+from app.Schemas.model import UserMessage
 from app.ai.agent import get_agent,AgentContext
 from app.services.image_utils import image_url_to_base64
 from app.rag.rag import retrieve_relevant_docs
 
-async def event_stream(
-        chat_id: int,
-        user_content: str,
-        session,
-        images: list | None = None,
-        files: list | None = None,
-        kb_id:int | None = None,
-):
+async def event_stream(message : UserMessage,session,):
     """SSE 流式生成器，负责调用 AI 并逐块返回"""
 
     yield f"data: {json.dumps({'type': 'start'})}\n\n"
@@ -26,21 +20,21 @@ async def event_stream(
     content_blocks = []
     temp_instruction = None
     rag_content = ""
-    if images:
-        for img in images:
+    if message.images:
+        for img in message.images:
             content_blocks.append({
                 "type": "image_url",
                 "image_url": {"url": image_url_to_base64(img.url)}
             })
-    if files:
+    if message.files:
         pass
-    if kb_id:
+    if message.kb_id:
         if (await session.exec(
-                select(KnowledgeDocuments).where(KnowledgeDocuments.kb_id == kb_id)
+                select(KnowledgeDocuments).where(KnowledgeDocuments.kb_id == message.kb_id)
             )).first():
             try:
                 # 1. 检索相关文档片段
-                relevant_chunks = await retrieve_relevant_docs(kb_id, user_content)
+                relevant_chunks = await retrieve_relevant_docs(message.kb_id, message.content)
                 # 2. 生成资料结果
                 rag_content = "\n\n".join(relevant_chunks) + "\n\n 资料结束，请回答用户问题(可能为文字，图片，文件中的一个或多个)： \n\n"
                 # 3、动态追加系统提示词
@@ -54,7 +48,7 @@ async def event_stream(
         else :
             rag_content = "用户引用了知识库，但知识库还没有任何文档，请在回复时说明这个问题。另外，请上网检索资料来回答用户问题。"
     # 拼接消息
-    content = rag_content + user_content
+    content = rag_content + message.content
     content_blocks.append({"type": "text", "text": content})
 
     human_message = HumanMessage(content=content_blocks)
@@ -65,7 +59,7 @@ async def event_stream(
             "messages": [human_message]
         },
         stream_mode="messages",
-        config={"configurable": {"thread_id": chat_id}},
+        config={"configurable": {"thread_id": message.chat_id}},
         context=AgentContext(temp_instruction=temp_instruction)
     ):
         # ★ 只处理 AI 消息块，跳过工具消息(ToolMessage)等
@@ -80,7 +74,7 @@ async def event_stream(
         yield f"data: {json.dumps({'type': 'chunk', 'content': content})}\n\n"
 
     # 保存 AI 消息
-    ai_message = Message(chat_id=chat_id, role="ai", content=full_content)
+    ai_message = Message(chat_id=message.chat_id, role="ai", content=full_content)
     session.add(ai_message)
 
     await session.flush()

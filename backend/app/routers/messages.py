@@ -3,32 +3,17 @@ from fastapi.responses import StreamingResponse
 
 from datetime import datetime
 
-from sqlmodel import select, Field, func
-from pydantic import BaseModel
+from sqlmodel import select, func
 
 from app.database import get_session,User,Chat,Message,KnowledgeBases,KnowledgeDocuments,DocStatus
 from app.dependencies import get_current_user
 from app.services.sse_stream import event_stream
+from app.Schemas.model import UserMessage
 router = APIRouter()
-
-
-class Image(BaseModel):
-    url: str | None=Field(description="图片url")
-    name: str| None=Field(description="图片名称")
-class File(BaseModel):
-    fileId: str | None = Field(description="文件")
-    name: str | None = Field(description="文件名称")
-    size: int | None = Field(description="文件大小")
-class UserMessages(BaseModel):
-    chat_id: int=Field(...,description="对话 ID")
-    content: str | None =Field(description="文本消息内容（与图片/文件至少有一个）")
-    images:list[Image] | None=Field(description="图片数组，每项包含 url、name")
-    files: list[File] | None = Field(description="文件数组，每项包含 fileId、name、size")
-    kb_id: int | None = Field(description="知识库 ID。传入时 AI 会先检索知识库相关内容再回答")
 
 # 发送消息接口，流式回复
 @router.post("/message/send")
-async def send_messages(message: UserMessages,
+async def send_messages(message: UserMessage,
                         current_user: User = Depends(get_current_user),
                         session=Depends(get_session)):
     # 验证权限
@@ -67,9 +52,7 @@ async def send_messages(message: UserMessages,
 
     # 3、调用 app.services.sse_stream 的 event_stream函数实现流式回复
     return StreamingResponse(
-        event_stream(
-            message.chat_id, message.content, session, message.images, message.files,message.kb_id
-        ),
+        event_stream(message,session,),
         media_type="text/event-stream"
     )
 
