@@ -7,11 +7,9 @@ def image_url_to_base64(url):
     """将本地图片 URL 转为 base64 data URL，供 AI 云端服务读取"""
     if not url:
         return None
-    # 从 URL 提取文件路径：http://127.0.0.1:8000/uploads/xxx.png → uploads/xxx.png
-    if "127.0.0.1:8000/" in url:
-        file_path = url.split("127.0.0.1:8000/", 1)[1]
-    elif "localhost:8000/" in url:
-        file_path = url.split("localhost:8000/", 1)[1]
+    # 从 URL 提取本地文件路径；仅识别指向本站 uploads 静态目录的地址（绝对或相对均可）
+    if "/uploads/" in url:
+        file_path = "uploads/" + url.split("/uploads/", 1)[1].lstrip("/")
     else:
         return url  # 已经是外部 URL，直接返回
 
@@ -24,13 +22,11 @@ def image_url_to_base64(url):
 # ==================== 文件处理（合并自 document_loader 逻辑） ====================
 
 def _extract_local_path(url):
-    """从本地 URL 提取磁盘路径，非本地 URL 返回 None"""
+    """从 URL 提取本地磁盘路径，非本站 uploads 地址返回 None"""
     if not url:
         return None
-    if "127.0.0.1:8000/" in url:
-        return url.split("127.0.0.1:8000/", 1)[1]
-    elif "localhost:8000/" in url:
-        return url.split("localhost:8000/", 1)[1]
+    if "/uploads/" in url:
+        return "uploads/" + url.split("/uploads/", 1)[1].lstrip("/")
     return None
 
 

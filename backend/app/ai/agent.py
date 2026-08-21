@@ -125,7 +125,9 @@ async def get_agent():
         return _agent
     # ---定义智能体的记忆管理（数据库）
     # 基于sqlite轻量级数据库实现的记忆管理策略
-    connection = aiosqlite.connect("data/checkpoint/checkpoint.db")
+    db_path = "data/checkpoint/checkpoint.db"
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)  # 有则用，无则建
+    connection = aiosqlite.connect(db_path)
     checkpointer=AsyncSqliteSaver(connection)
     await checkpointer.setup()
 

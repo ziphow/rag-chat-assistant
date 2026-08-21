@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -14,6 +15,9 @@ from app.routers.knowledge_bases import router as knowledge_base_router
 # 定义 lifespan 上下文管理器
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # 启动时确保运行时目录存在：有则用，无则建（sqlite/chroma/uploads）
+    for d in ("uploads", "data/checkpoint", "data/chroma_db"):
+        os.makedirs(d, exist_ok=True)
     print("服务器启动成功")
     #await create_db_and_tables() # 异步创建系统数据库表
     yield

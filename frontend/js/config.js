@@ -10,7 +10,8 @@
 // ==================== API 配置 ====================
 
 const API_CONFIG = {
-    baseURL: 'http://127.0.0.1:8000',  // 后端 API 基础地址
+    // 本地开发（http 或 file:// 直接打开）指向本地后端；部署后与后端同源（nginx 反代），走空字符串相对路径
+    baseURL: (location.protocol !== 'http:' && location.protocol !== 'https:') || ['127.0.0.1', 'localhost'].includes(location.hostname) ? 'http://127.0.0.1:8000' : '',
     tokenKey: 'ai_chat_token',          // localStorage 中存储 token 的 key
 };
 

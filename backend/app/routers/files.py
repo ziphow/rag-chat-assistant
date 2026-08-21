@@ -30,6 +30,7 @@ async def upload_file(file: UploadFile,current_user=Depends(get_current_user)):
             "fileName": file.filename,
             "fileSize": file.size,
             "fileType": file.content_type,
-            "fileUrl": f"http://127.0.0.1:8000/{UPLOAD_DIR}/{saved_name}",
+            # 本地开发默认绝对地址；部署时设 BACKEND_BASE_URL='' 走同源相对路径
+            "fileUrl": f"{os.getenv('BACKEND_BASE_URL', 'http://127.0.0.1:8000')}/{UPLOAD_DIR}/{saved_name}",
         }
     }
