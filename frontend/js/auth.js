@@ -33,17 +33,33 @@ function switchAuth(type) {
     const tabLogin = document.getElementById('auth-tab-login');
     const tabRegister = document.getElementById('auth-tab-register');
 
-    if (type === 'register') {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'flex';
-        if (tabLogin) tabLogin.classList.remove('active');
-        if (tabRegister) tabRegister.classList.add('active');
-    } else {
-        registerForm.style.display = 'none';
-        loginForm.style.display = 'flex';
-        if (tabRegister) tabRegister.classList.remove('active');
-        if (tabLogin) tabLogin.classList.add('active');
+    const toRegister = type === 'register';
+    const showForm = toRegister ? registerForm : loginForm;
+    const hideForm = toRegister ? loginForm : registerForm;
+
+    if (tabLogin) tabLogin.classList.toggle('active', !toRegister);
+    if (tabRegister) tabRegister.classList.toggle('active', toRegister);
+
+    // 目标表单已显示则无需切换
+    if (hideForm.style.display === 'none') return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        hideForm.style.display = 'none';
+        showForm.style.display = 'flex';
+        return;
     }
+
+    // 出场动画 → 切换显示 → 入场动画
+    hideForm.classList.remove('auth-form--in');
+    hideForm.classList.add('auth-form--out');
+    window.setTimeout(function () {
+        hideForm.classList.remove('auth-form--out');
+        hideForm.style.display = 'none';
+        showForm.style.display = 'flex';
+        showForm.classList.remove('auth-form--in');
+        void showForm.offsetWidth; // 触发回流以重启入场动画
+        showForm.classList.add('auth-form--in');
+    }, 250);
 }
 
 /** 平滑滚动到登录 / 注册区，可选切换表单类型 */

@@ -10,18 +10,60 @@
 
 // ==================== Tab 切换 ====================
 
+/**
+ * 侧边栏面板切换：GSAP 驱动的丝滑滑行（面板叠放 + 位移淡入淡出），
+ * 同时滑动底部指示条；无 GSAP / 减少动态效果时退化为瞬时切换。
+ */
 function switchSidebarTab(tab) {
-    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    var isChats = tab === 'chats';
+    var showBtn = document.getElementById(isChats ? 'tab-chats' : 'tab-knowledge');
+    var showEl = document.getElementById(isChats ? 'tab-content-chats' : 'tab-content-knowledge');
+    var hideEl = document.getElementById(isChats ? 'tab-content-knowledge' : 'tab-content-chats');
+    if (!showEl) return;
 
-    if (tab === 'chats') {
-        document.getElementById('tab-chats').classList.add('active');
-        document.getElementById('tab-content-chats').classList.add('active');
-    } else if (tab === 'knowledge') {
-        document.getElementById('tab-knowledge').classList.add('active');
-        document.getElementById('tab-content-knowledge').classList.add('active');
-        loadKnowledgeBases();
+    var alreadyActive = showEl.classList.contains('active');
+
+    document.querySelectorAll('.sidebar-tab').forEach(t => t.classList.remove('active'));
+    if (showBtn) showBtn.classList.add('active');
+    var tabsBox = document.getElementById('sidebar-tabs');
+    if (tabsBox) tabsBox.dataset.active = tab;
+
+    var dir = isChats ? -1 : 1; // chats→knowledge 向左滑，反向反之
+    var canAnimate = typeof gsap !== 'undefined'
+        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (alreadyActive && canAnimate && hideEl) {
+        // 快速连点回同面板：仅复位另一面板的位移
+        gsap.set(hideEl, { clearProps: 'x,opacity,visibility' });
     }
+
+    if (!alreadyActive) {
+        showEl.classList.add('active');
+        if (hideEl) hideEl.classList.remove('active');
+
+        if (canAnimate && hideEl) {
+            gsap.to(hideEl, {
+                x: -52 * dir,
+                autoAlpha: 0,
+                duration: 0.26,
+                ease: 'power2.in',
+                overwrite: true,
+            });
+            gsap.fromTo(showEl,
+                { x: 52 * dir, autoAlpha: 0 },
+                {
+                    x: 0,
+                    autoAlpha: 1,
+                    duration: 0.46,
+                    delay: 0.1,
+                    ease: 'power3.out',
+                    overwrite: true,
+                }
+            );
+        }
+    }
+
+    if (!isChats) loadKnowledgeBases();
 }
 
 // ==================== 知识库列表 ====================
@@ -76,6 +118,16 @@ function renderKnowledgeBases() {
         `;
         listEl.appendChild(item);
     });
+
+    // 列表项依次滑入
+    const items = listEl.querySelectorAll('.kb-item');
+    if (items.length && typeof gsap !== 'undefined'
+        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        gsap.fromTo(items,
+            { autoAlpha: 0, x: 26 },
+            { autoAlpha: 1, x: 0, duration: 0.42, stagger: 0.05, ease: 'power2.out', overwrite: true, clearProps: 'transform' }
+        );
+    }
 }
 
 // ==================== 创建知识库 ====================

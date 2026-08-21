@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>知源 AI · 智能知识助手</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=21.11">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
@@ -17,28 +17,20 @@
     <div id="login-page" class="login-page">
         <!-- 滚动背景层（哲风壁纸随滚动交叉淡入） -->
         <div class="lp-bg-stack" aria-hidden="true">
-            <div class="lp-bg-layer" data-layer="features" style="background-image:url('assets/material/web/bg-cloud-night.jpg')"></div>
-            <div class="lp-bg-layer" data-layer="story" style="background-image:url('assets/material/web/bg-impression-night.jpg')"></div>
-            <div class="lp-bg-layer" data-layer="multimodal" style="background-image:url('assets/material/web/bg-horizon.jpg')"></div>
-            <div class="lp-bg-layer" data-layer="knowledge" style="background-image:url('assets/material/web/bg-reflection.jpg')"></div>
-            <div class="lp-bg-layer" data-layer="streaming" style="background-image:url('assets/material/web/bg-city.jpg')"></div>
-            <div class="lp-bg-layer" data-layer="gallery" style="background-image:url('assets/material/web/bg-sword.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="features" style="background-image:url('assets/material/web/bg-impression-night.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="story" style="background-image:url('assets/material/web/bg-city.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="multimodal" style="background-image:url('assets/showcase-multimodal.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="knowledge" style="background-image:url('assets/showcase-knowledge.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="streaming" style="background-image:url('assets/showcase-streaming.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="conversations" style="background-image:url('assets/showcase-conversations.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="gallery" style="background-image:url('assets/material/web/bg-reflection-night.jpg')"></div>
+            <div class="lp-bg-layer" data-layer="auth" style="background-image:url('assets/material/web/bg-sword.jpg')"></div>
         </div>
 
         <!-- 顶部导航 -->
         <header class="lp-nav">
             <div class="lp-nav-logo">
-                <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-                    <rect width="48" height="48" rx="12" fill="url(#lp-logo-grad)"/>
-                    <path d="M24 11L35 17.5V30.5L24 37L13 30.5V17.5L24 11Z" stroke="white" stroke-width="2" fill="none"/>
-                    <circle cx="24" cy="24" r="4" fill="white"/>
-                    <defs>
-                        <linearGradient id="lp-logo-grad" x1="0" y1="0" x2="48" y2="48">
-                            <stop stop-color="#6366f1"/>
-                            <stop offset="1" stop-color="#8b5cf6"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
+                <img class="lp-nav-logo-img" src="assets/avatars/头像.png" alt="知源 AI" width="30" height="30">
                 <span>知源 AI</span>
             </div>
             <div class="lp-nav-actions">
@@ -148,7 +140,7 @@
         <!-- 分镜展示 1：多模态对话 -->
         <section class="lp-showcase lp-showcase--media" id="lp-showcase-multimodal">
             <div class="lp-showcase-media">
-                <img src="assets/material/web/lion.jpg" alt="狮子照片分析演示" loading="lazy">
+                <img src="assets/showcase-multimodal.jpg" alt="图片与文档多模态分析演示" loading="lazy">
             </div>
             <div class="lp-showcase-copy">
                 <span class="lp-showcase-eyebrow">多模态对话</span>
@@ -172,7 +164,7 @@
         <!-- 分镜展示 3：实时流式回复 -->
         <section class="lp-showcase lp-showcase--media" id="lp-showcase-streaming">
             <div class="lp-showcase-media">
-                <img src="assets/material/web/zhe-vortex.jpg" alt="实时流式回复演示" loading="lazy">
+                <img src="assets/showcase-streaming.jpg" alt="实时流式回复演示" loading="lazy">
             </div>
             <div class="lp-showcase-copy">
                 <span class="lp-showcase-eyebrow">实时流式回复</span>
@@ -181,25 +173,25 @@
             </div>
         </section>
 
-        <!-- 灵感画廊（仿 haowallpaper 瀑布流透明卡片） -->
-        <section class="lp-section lp-gallery" id="lp-gallery">
-            <h2 class="lp-section-title">灵感画廊</h2>
-            <p class="lp-section-desc">每一张，都是 AI 可以读懂的世界</p>
-            <div class="lp-gallery-filters" id="gallery-filters">
-                <button class="g-filter active" data-cat="all">全部</button>
-                <button class="g-filter" data-cat="live">动态壁纸</button>
-                <button class="g-filter" data-cat="starry">星空</button>
-                <button class="g-filter" data-cat="nature">自然</button>
-                <button class="g-filter" data-cat="life">生灵</button>
+        <!-- 分镜展示 4：多对话管理 -->
+        <section class="lp-showcase lp-showcase--media lp-showcase--reverse" id="lp-showcase-conversations">
+            <div class="lp-showcase-media">
+                <img src="assets/showcase-conversations.jpg?v=2" alt="多对话管理演示" loading="lazy">
             </div>
-            <div class="lp-gallery-grid" id="gallery-grid">
-                <!-- js/gallery.js 动态渲染 -->
+            <div class="lp-showcase-copy">
+                <span class="lp-showcase-eyebrow">多对话管理</span>
+                <h3 class="lp-showcase-title">多个话题并行，<br>随时回到上下文</h3>
+                <p class="lp-showcase-desc">自由创建、搜索与管理历史对话，每个话题独立保留记忆，切换之间无缝衔接。</p>
             </div>
         </section>
 
         <!-- 登录 / 注册 -->
         <section class="lp-section lp-auth-section" id="lp-auth">
             <div class="lp-auth-card">
+                <div class="lp-auth-heading">
+                    <h2 class="lp-auth-title">从这里开始</h2>
+                    <p class="lp-auth-sub">Start From Here</p>
+                </div>
                 <div class="lp-auth-tabs">
                     <button class="lp-auth-tab active" id="auth-tab-login" onclick="switchAuth('login')">登录</button>
                     <button class="lp-auth-tab" id="auth-tab-register" onclick="switchAuth('register')">注册</button>
@@ -264,12 +256,23 @@
             </div>
         </section>
 
-        <!-- 页脚 -->
+        <!-- 页脚（置于输入账号密码下方） -->
         <footer class="lp-footer">
             <p>知源 AI · 由 FastAPI 与 LangChain 驱动</p>
             <p class="lp-footer-meta">AI 生成内容仅供参考，请核实重要信息</p>
             <p class="lp-footer-meta">画廊素材来源：哲风壁纸 · 样片日记 · 个人学习用途</p>
         </footer>
+
+        <!-- 灵感画廊（3D 圆柱轮播：滚动循环展示壁纸，页面最底部、最后一页，其下无任何内容） -->
+        <section class="lp-gallery" id="lp-gallery">
+            <div class="gallery-stage" id="gallery-stage">
+                <div class="carousel" id="carousel">
+                    <!-- js/gallery.js 动态注入壁纸卡片 -->
+                </div>
+                <div class="carousel-ellipse carousel-ellipse--top" aria-hidden="true"></div>
+                <div class="carousel-ellipse carousel-ellipse--bottom" aria-hidden="true"></div>
+            </div>
+        </section>
 
         <!-- 画廊灯箱 -->
         <div class="g-lightbox" id="g-lightbox" aria-hidden="true">
@@ -307,7 +310,7 @@
             </div>
 
             <!-- Tab 切换 -->
-            <div class="sidebar-tabs">
+            <div class="sidebar-tabs" id="sidebar-tabs" data-active="chats">
                 <button class="sidebar-tab active" id="tab-chats" onclick="switchSidebarTab('chats')">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -321,37 +324,41 @@
                     </svg>
                     <span>知识库</span>
                 </button>
+                <span class="tab-slider" aria-hidden="true"></span>
             </div>
 
-            <!-- 对话列表 -->
-            <div class="tab-content active" id="tab-content-chats">
-                <div class="sidebar-search">
-                    <div class="search-box">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
-                        <input type="text" id="search-chat" placeholder="搜索对话..." oninput="searchChats()">
+            <!-- 列表面板（叠放 + 滑动切换） -->
+            <div class="tab-contents">
+                <!-- 对话列表 -->
+                <div class="tab-content active" id="tab-content-chats">
+                    <div class="sidebar-search">
+                        <div class="search-box">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <input type="text" id="search-chat" placeholder="搜索对话..." oninput="searchChats()">
+                        </div>
+                    </div>
+
+                    <div class="chat-history-list" id="chat-history-list">
+                        <!-- 动态生成 -->
                     </div>
                 </div>
 
-                <div class="chat-history-list" id="chat-history-list">
-                    <!-- 动态生成 -->
-                </div>
-            </div>
-
-            <!-- 知识库管理 -->
-            <div class="tab-content" id="tab-content-knowledge">
-                <div class="kb-section">
-                    <button class="btn-new-kb" onclick="showCreateKbModal()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"/>
-                            <line x1="5" y1="12" x2="19" y2="12"/>
-                        </svg>
-                        <span>创建知识库</span>
-                    </button>
-                    <div class="kb-list" id="kb-list">
-                        <!-- 动态生成 -->
+                <!-- 知识库管理 -->
+                <div class="tab-content" id="tab-content-knowledge">
+                    <div class="kb-section">
+                        <button class="btn-new-kb" onclick="showCreateKbModal()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            <span>创建知识库</span>
+                        </button>
+                        <div class="kb-list" id="kb-list">
+                            <!-- 动态生成 -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -594,9 +601,9 @@
     <!-- ============ 头像选择弹层 ============ -->
     <div class="avatar-picker" id="avatar-picker" aria-hidden="true">
         <div class="avatar-picker-backdrop" onclick="closeAvatarPicker()"></div>
-        <div class="avatar-picker-panel" role="dialog" aria-label="选择头像">
+        <div class="avatar-picker-panel" role="dialog" aria-label="个人设置">
             <div class="avatar-picker-head">
-                <h3>选择头像</h3>
+                <h3>个人设置</h3>
                 <button class="avatar-picker-close" onclick="closeAvatarPicker()" aria-label="关闭">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                         <line x1="18" y1="6" x2="6" y2="18"/>
@@ -604,25 +611,29 @@
                     </svg>
                 </button>
             </div>
+            <h4 class="picker-section-label">选择头像</h4>
             <div class="avatar-grid" id="avatar-grid"><!-- 动态生成 --></div>
+            <h4 class="picker-section-label">主题</h4>
+            <div class="theme-options" id="theme-options"><!-- js/theme.js 动态生成 --></div>
         </div>
     </div>
 
     <!-- JS 模块（按依赖顺序加载） -->
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/animations.js"></script>
-    <script src="js/gallery.js"></script>
+    <script src="js/config.js?v=21.3"></script>
+    <script src="js/utils.js?v=21.3"></script>
+    <script src="js/animations.js?v=21.5"></script>
+    <script src="js/gallery.js?v=21.13"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="js/markdown.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/avatar.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/knowledge-base.js"></script>
-    <script src="js/file-upload.js"></script>
-    <script src="js/file-history.js"></script>
-    <script src="js/interactions.js"></script>
-    <script src="app.js"></script>
+    <script src="js/markdown.js?v=21.3"></script>
+    <script src="js/api.js?v=21.3"></script>
+    <script src="js/auth.js?v=21.10"></script>
+    <script src="js/theme.js?v=21.3"></script>
+    <script src="js/avatar.js?v=21.3"></script>
+    <script src="js/chat.js?v=21.3"></script>
+    <script src="js/knowledge-base.js?v=21.3"></script>
+    <script src="js/file-upload.js?v=21.3"></script>
+    <script src="js/file-history.js?v=21.3"></script>
+    <script src="js/interactions.js?v=21.4"></script>
+    <script src="app.js?v=21.3"></script>
 </body>
 </html>

@@ -1,12 +1,12 @@
 /**
- * gallery.js — 灵感画廊：瀑布流渲染 + 分类筛选 + 灯箱预览
+ * gallery.js — 灵感画廊：3D 圆柱轮播（滚轮 / 拖拽驱动，物理惯性 + 无限循环）
  *
  * 职责：
- *   - 渲染 haowallpaper 风格的透明卡片网格（CSS columns 瀑布流）
- *   - 精选壁纸 + 动态壁纸（视频卡片）分类
- *   - 悬浮渐显信息层（标题 / 标签 / 分辨率 / 大小）
+ *   - 把星空 / 自然壁纸渲染为围绕竖直圆柱排列的卡片
+ *   - 中心卡片最大居中、两侧卡片绕 Y 轴向后退并呈梯形透视（rotateY + translateZ）
+ *   - 物理惯性驱动：滚轮 / 水平拖拽累积角速度，松手后按摩擦衰减缓缓滑行
+ *   - 旋转角度无界累加，实现无缝无限循环
  *   - 点击卡片打开灯箱（图片或视频）
- *   - 滚动渐入动效（ScrollTrigger.batch）+ 分类切换交错动画
  */
 
 (function () {
@@ -14,111 +14,172 @@
 
     var PREFIX = 'assets/material/web/';
 
-    /**
-     * 画廊数据（精选，避免一股脑堆砌）：
-     *  - 哲风壁纸已作为页面各区块的背景使用，画廊仅保留精选摄影 + 2 个动态壁纸
-     *  - type: 'image' | 'video'
-     */
-    var GALLERY_ITEMS = [
-        { title: '梵高·星夜', res: '3840×2160', size: '动态壁纸 · 8s', cat: 'live', tags: '后印象派 · 星空', type: 'video', thumb: 'hero-starry.jpg', full: 'starry-video.mp4' },
-        { title: '月下红枫', res: '3840×2160', size: '动态壁纸 · 10s', cat: 'live', tags: '月光 · 枫叶', type: 'video', thumb: 't-moon.jpg', full: 'moon-video.mp4' },
-        { title: '狮之瞳', res: '3840×2160', size: '1.1 MB', cat: 'life', tags: '微距 · 南非', type: 'image', thumb: 't-lion.jpg', full: 'lion.jpg' },
-        { title: '深海光束', res: '3840×2160', size: '0.3 MB', cat: 'life', tags: '水下 · 体积光', type: 'image', thumb: 't-dolphin.jpg', full: 'dolphin.jpg' },
-        { title: '草原长颈鹿', res: '3840×2160', size: '1.4 MB', cat: 'life', tags: '野生动物 · 航拍', type: 'image', thumb: 't-giraffe.jpg', full: 'giraffe.jpg' },
-        { title: '费尔班克斯星夜', res: '3840×2160', size: '0.2 MB', cat: 'starry', tags: '星野 · 阿拉斯加', type: 'image', thumb: 't-fb20.jpg', full: 'fairbanks-20.jpg' },
-        { title: '费尔班克斯雪林', res: '3840×2160', size: '0.2 MB', cat: 'starry', tags: '长曝光 · 星空', type: 'image', thumb: 't-fb24.jpg', full: 'fairbanks-24.jpg' },
-        { title: '冷嘎措', res: '1920×1080', size: '0.2 MB', cat: 'nature', tags: '藏地雪山', type: 'image', thumb: 't-lengga.jpg', full: 'lenggacuo.jpg' },
-        { title: '玉龙拉错', res: '1920×1080', size: '0.2 MB', cat: 'nature', tags: '高原湖泊', type: 'image', thumb: 't-yulong.jpg', full: 'yulonglacuo.jpg' },
-        { title: '新龙红山', res: '1920×1080', size: '0.2 MB', cat: 'nature', tags: '丹霞地貌', type: 'image', thumb: 't-xinlong.jpg', full: 'xinlong.jpg' },
+    /** 壁纸数据（thumb 用于卡片封面，full 用于灯箱大图/视频） */
+    var ITEMS = [
+        { thumb: 'hero-starry.jpg', full: 'starry-video.mp4', type: 'video', title: '梵高·星夜', meta: '后印象派 · 星空' },
+        { thumb: 't-fb20.jpg', full: 'fairbanks-20.jpg', type: 'image', title: '费尔班克斯星夜', meta: '星野 · 阿拉斯加' },
+        { thumb: 't-fb24.jpg', full: 'fairbanks-24.jpg', type: 'image', title: '费尔班克斯雪林', meta: '长曝光 · 星空' },
+        { thumb: 't-vortex.jpg', full: 'zhe-vortex.jpg', type: 'image', title: '星空漩涡', meta: '星轨 · 夜空' },
+        { thumb: 't-night.jpg', full: 'zhe-night.jpg', type: 'image', title: '静夜星穹', meta: '银河 · 夜空' },
+        { thumb: 't-moon.jpg', full: 'moon-video.mp4', type: 'video', title: '月下红枫', meta: '月光 · 枫叶' },
+        { thumb: 't-lengga.jpg', full: 'lenggacuo.jpg', type: 'image', title: '冷嘎措', meta: '藏地雪山' },
+        { thumb: 't-yulong.jpg', full: 'yulonglacuo.jpg', type: 'image', title: '玉龙拉错', meta: '高原湖泊' },
+        { thumb: 't-horizon.jpg', full: 'zhe-horizon.jpg', type: 'image', title: '地平线', meta: '旷野 · 天际线' },
+        { thumb: 't-xinlong.jpg', full: 'xinlong.jpg', type: 'image', title: '新龙红山', meta: '丹霞地貌' },
     ];
 
-    var grid = document.getElementById('gallery-grid');
+    var stage = document.getElementById('gallery-stage');
+    var carousel = document.getElementById('carousel');
     var loginPage = document.getElementById('login-page');
-    if (!grid || !loginPage) return;
+    if (!stage || !carousel || !loginPage) return;
 
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var hasGsap = typeof gsap !== 'undefined';
 
-    function esc(s) {
-        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
+    var N = ITEMS.length;
+    var isMobile = window.matchMedia('(max-width: 720px)').matches;
+    var R = isMobile ? 300 : 640;   // 圆柱半径（px）
+    var CW = isMobile ? 160 : 320;  // 卡片宽
+    var CH = isMobile ? 106 : 210;  // 卡片高
 
-    /** 渲染卡片 */
-    grid.innerHTML = GALLERY_ITEMS.map(function (it) {
-        var badge = it.type === 'video'
-            ? '<span class="g-live-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21"/></svg>动态</span>'
-            : '';
+    // 尺寸以 CSS 变量挂在 stage 上，卡片与椭圆均继承
+    stage.style.setProperty('--cw', CW + 'px');
+    stage.style.setProperty('--ch', CH + 'px');
+    stage.style.setProperty('--r', R + 'px');
+
+    /* ---------- 渲染卡片：均匀分布在 360°/N 的圆柱上 ---------- */
+    var STEP_DEG = 360 / N;
+    carousel.innerHTML = ITEMS.map(function (it, i) {
         return '' +
-            '<figure class="g-card" data-cat="' + it.cat + '" data-type="' + it.type + '" ' +
-            'data-full="' + esc(PREFIX + it.full) + '" data-title="' + esc(it.title) + '" ' +
-            'data-meta="' + esc(it.tags + ' · ' + it.res + ' · ' + it.size) + '" tabindex="0">' +
-            '<div class="g-card-media"><img src="' + esc(PREFIX + it.thumb) + '" alt="' + esc(it.title) + '" loading="lazy"></div>' +
-            badge +
-            '<span class="g-res">' + esc(it.res) + '</span>' +
-            '<figcaption class="g-info"><span class="g-title">' + esc(it.title) + '</span>' +
-            '<span class="g-tags">' + esc(it.tags) + '</span>' +
-            '<span class="g-size">' + esc(it.size) + '</span></figcaption>' +
+            '<figure class="g-card" data-full="' + PREFIX + it.full + '" data-type="' + it.type + '" ' +
+            'data-title="' + it.title + '" data-meta="' + it.meta + '" tabindex="0" ' +
+            'style="background-image:url(\'' + PREFIX + it.thumb + '\');transform:rotateY(' + (i * STEP_DEG) + 'deg) translateZ(var(--r));">' +
             '</figure>';
     }).join('');
 
-    var cards = Array.prototype.slice.call(grid.children);
+    /* ---------- 物理惯性：角速度 + 摩擦衰减，旋转角度无界累加（无限循环） ---------- */
+    var rotation = 0;          // 累积旋转角度（无界 → 无限循环）
+    var velocity = 0;          // 角速度（度/帧）
+    var FRICTION = 0.97;       // 转轴「润滑油」：越大松手后滑行越久
+    var WHEEL_SENS = 0.03;     // 滚轮每 1 deltaY 的角速度增量
+    var DRAG_SENS = 0.5;       // 水平拖拽每 1px 的旋转角度（跟手）
+    var MAX_VEL = 32;          // 角速度上限，避免一次甩飞
+    var MIN_VEL = 0.01;        // 低于此值视为静止
 
-    /* ---------- 滚动渐入 ---------- */
-    if (hasGsap && !reduceMotion && typeof ScrollTrigger !== 'undefined') {
-        gsap.set(cards, { autoAlpha: 0, y: 36 });
-        ScrollTrigger.batch(cards, {
-            scroller: loginPage,
-            start: 'top 88%',
-            once: true,
-            onEnter: function (batch) {
-                gsap.to(batch, { autoAlpha: 1, y: 0, duration: 0.65, stagger: 0.06, ease: 'power2.out', overwrite: true });
-            }
-        });
+    var rafId = null;
+    var lastT = 0;             // 上一帧时间戳（基于时间步进，保证高刷/无 vsync 环境手感一致）
+    var dragging = false;
+    var dragStartRotation = 0;
+    var dragStartX = 0;
+    var lastDragX = 0;
+    var dragMoved = 0;         // 累计拖拽位移，用于区分点击与拖拽
+    var instantV = 0;          // 拖拽过程中的瞬时角速度（松开后作为惯性初速度）
+
+    function applyTransform() {
+        carousel.style.transform = 'translate(-50%, -50%) rotateY(' + rotation + 'deg)';
     }
 
-    /* ---------- 分类筛选 ---------- */
-    var filtersBox = document.getElementById('gallery-filters');
-    if (filtersBox) {
-        filtersBox.addEventListener('click', function (e) {
-            var btn = e.target.closest('.g-filter');
-            if (!btn || btn.classList.contains('active')) return;
-
-            filtersBox.querySelectorAll('.g-filter').forEach(function (b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-            var cat = btn.dataset.cat;
-
-            var show = [], hide = [];
-            cards.forEach(function (c) {
-                (cat === 'all' || c.dataset.cat === cat ? show : hide).push(c);
-            });
-
-            if (hasGsap && !reduceMotion) {
-                gsap.to(hide, {
-                    autoAlpha: 0, scale: 0.94, duration: 0.25, ease: 'power2.in',
-                    onComplete: function () { hide.forEach(function (c) { c.style.display = 'none'; }); }
-                });
-                show.forEach(function (c) { c.style.display = ''; });
-                gsap.fromTo(show,
-                    { autoAlpha: 0, y: 22, scale: 0.96 },
-                    { autoAlpha: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.045, ease: 'power2.out', delay: 0.12, overwrite: true }
-                );
-            } else {
-                hide.forEach(function (c) { c.style.display = 'none'; });
-                show.forEach(function (c) { c.style.display = ''; });
-            }
-        });
+    function start() {
+        if (rafId != null) return;
+        lastT = 0;
+        rafId = requestAnimationFrame(tick);
     }
+
+    function stop() {
+        if (rafId != null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+        lastT = 0;
+    }
+
+    function tick(t) {
+        if (!lastT) lastT = t;
+        var dt = t - lastT;
+        lastT = t;
+        if (dt < 0) dt = 0;
+        if (dt > 50) dt = 50;   // 标签页切回等跳变不累积
+        var k = dt / 16.667;    // 以 60fps 帧为基准的步长系数
+        rotation += velocity * k;
+        velocity *= Math.pow(FRICTION, k);
+        if (Math.abs(velocity) < MIN_VEL) velocity = 0;
+        applyTransform();
+        if (velocity === 0) {
+            rafId = null;
+            lastT = 0;
+            return;
+        }
+        rafId = requestAnimationFrame(tick);
+    }
+
+    function spin(dv) {
+        if (reduceMotion) {
+            // 减少动态偏好：直接累加角度，不做惯性滑行
+            velocity = 0;
+            rotation += dv;
+            applyTransform();
+            return;
+        }
+        velocity += dv;
+        if (velocity > MAX_VEL) velocity = MAX_VEL;
+        else if (velocity < -MAX_VEL) velocity = -MAX_VEL;
+        start();
+    }
+
+    // 滚轮：上下滚动 → 转动。不 preventDefault，页面仍可正常上下滚动（不会锁定上滑）
+    stage.addEventListener('wheel', function (e) {
+        spin(e.deltaY * WHEEL_SENS);
+    }, { passive: true });
+
+    // 指针拖拽：水平拖动跟手旋转，垂直滑动留给页面滚动（配合 CSS touch-action: pan-y）
+    stage.addEventListener('pointerdown', function (e) {
+        dragging = true;
+        dragMoved = 0;
+        dragStartRotation = rotation;
+        dragStartX = lastDragX = e.clientX;
+        instantV = 0;
+        velocity = 0;
+        stop();
+        stage.classList.add('dragging');
+    });
+
+    stage.addEventListener('pointermove', function (e) {
+        if (!dragging) return;
+        var dx = e.clientX - lastDragX;
+        dragMoved += Math.abs(dx);
+        // 右拖 → 卡片跟随手指右移（旋转角减小）
+        rotation = dragStartRotation - (e.clientX - dragStartX) * DRAG_SENS;
+        instantV = -dx * DRAG_SENS;
+        lastDragX = e.clientX;
+        applyTransform();
+    });
+
+    function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        stage.classList.remove('dragging');
+        if (!reduceMotion && Math.abs(instantV) >= MIN_VEL) {
+            velocity = instantV;
+            start();
+        }
+    }
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+    // 安全兜底：若指针在 stage 之外松开（拖出边界），也能正确结束拖拽
+    document.addEventListener('pointerup', endDrag);
+    document.addEventListener('pointercancel', endDrag);
+
+    applyTransform();
 
     /* ---------- 灯箱（图片 / 视频） ---------- */
     var lightbox = document.getElementById('g-lightbox');
+    if (!lightbox) return;
     var lbImg = document.getElementById('g-lightbox-img');
     var lbVideo = document.getElementById('g-lightbox-video');
     var lbTitle = document.getElementById('g-lightbox-title');
     var lbMeta = document.getElementById('g-lightbox-meta');
-    var lbBody = lightbox ? lightbox.querySelector('.g-lightbox-body') : null;
 
     function openLightbox(card) {
-        if (!lightbox) return;
         var isVideo = card.dataset.type === 'video';
         var full = card.dataset.full;
 
@@ -143,44 +204,42 @@
 
         if (hasGsap && !reduceMotion) {
             gsap.fromTo(lightbox, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3, ease: 'power1.out' });
-            gsap.fromTo(lbBody, { autoAlpha: 0, scale: 0.93, y: 18 }, { autoAlpha: 1, scale: 1, y: 0, duration: 0.45, ease: 'power3.out' });
         }
     }
 
     function closeLightbox() {
-        if (!lightbox || !lightbox.classList.contains('open')) return;
-        if (lbVideo) { lbVideo.pause(); }
+        if (!lightbox.classList.contains('open')) return;
+        if (lbVideo) lbVideo.pause();
         function done() {
             lightbox.classList.remove('open');
             lightbox.setAttribute('aria-hidden', 'true');
             loginPage.style.overflow = '';
             if (lbImg) lbImg.src = '';
-            if (lbVideo) { lbVideo.src = ''; }
+            if (lbVideo) lbVideo.src = '';
         }
         if (hasGsap && !reduceMotion) {
-            gsap.to(lbBody, { autoAlpha: 0, scale: 0.95, duration: 0.22, ease: 'power2.in' });
             gsap.to(lightbox, { autoAlpha: 0, duration: 0.25, ease: 'power1.in', onComplete: done });
         } else {
             done();
         }
     }
 
-    grid.addEventListener('click', function (e) {
+    carousel.addEventListener('click', function (e) {
+        // 拖拽旋转后不触发点开灯箱，避免误触
+        if (dragMoved > 6) return;
         var card = e.target.closest('.g-card');
         if (card) openLightbox(card);
     });
 
-    grid.addEventListener('keydown', function (e) {
+    carousel.addEventListener('keydown', function (e) {
         if (e.key !== 'Enter' && e.key !== ' ') return;
         var card = e.target.closest('.g-card');
         if (card) { e.preventDefault(); openLightbox(card); }
     });
 
-    if (lightbox) {
-        document.getElementById('g-lightbox-backdrop').addEventListener('click', closeLightbox);
-        document.getElementById('g-lightbox-close').addEventListener('click', closeLightbox);
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeLightbox();
-        });
-    }
+    document.getElementById('g-lightbox-backdrop').addEventListener('click', closeLightbox);
+    document.getElementById('g-lightbox-close').addEventListener('click', closeLightbox);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
 })();

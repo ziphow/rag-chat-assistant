@@ -66,6 +66,8 @@
         if (!page) return;
         if (loginCtx) loginCtx.revert();
 
+        page.scrollTop = 0;
+
         loginCtx = gsap.context(() => {
             // 滚动叙事：把标题拆成逐字 span（仅拆一次，避免重复包裹）
             const storyText = page.querySelector('.lp-story-text');
@@ -164,13 +166,12 @@
                 scrollTrigger: { trigger: '.lp-feature-grid', start: 'top 82%', scroller: page },
             });
 
-            // 登录卡片：滚动进入时渐入
-            gsap.fromTo('.lp-auth-card', { autoAlpha: 0, y: 48 }, {
+            // 登录卡片：书本离场后从下方升起（滚动驱动，可随滚动倒退）
+            gsap.fromTo('.lp-auth-card', { autoAlpha: 0, y: 220 }, {
                 autoAlpha: 1,
                 y: 0,
-                duration: 0.8,
-                ease: 'power2.out',
-                scrollTrigger: { trigger: '.lp-auth-card', start: 'top 84%', scroller: page },
+                ease: 'none',
+                scrollTrigger: { trigger: '.lp-auth-section', start: 'top 96%', end: 'top 34%', scrub: true, scroller: page },
             });
 
             // Hero 背景视差：随滚动缓慢下移
@@ -180,32 +181,39 @@
                 scrollTrigger: { trigger: '.lp-hero', start: 'top top', end: 'bottom top', scrub: true, scroller: page },
             });
 
-            // 滚动背景：哲风壁纸按区块交叉淡入
-            const bgLayers = page.querySelectorAll('.lp-bg-layer');
+            // 滚动背景：哲风壁纸按区块「渐变交叉淡入」——进入某模块时其背景层柔和浮现，
+            // 相邻模块通过图层叠加实现平滑渐变过渡，随滚动可正/倒向播放。
             const bgMap = [
-                ['.lp-features', 0],
-                ['.lp-story', 1],
-                ['.lp-showcase-multimodal', 2],
-                ['.lp-showcase-knowledge', 3],
-                ['.lp-showcase-streaming', 4],
-                ['.lp-gallery', 5],
+                ['.lp-features', 'features'],
+                ['.lp-story', 'story'],
+                ['#lp-showcase-multimodal', 'multimodal'],
+                ['#lp-showcase-knowledge', 'knowledge'],
+                ['#lp-showcase-streaming', 'streaming'],
+                ['#lp-showcase-conversations', 'conversations'],
+                ['.lp-auth-section', 'auth'],
+                ['.lp-gallery', 'gallery'],
             ];
-            bgMap.forEach(([sel, idx]) => {
-                const layer = bgLayers[idx];
+            bgMap.forEach(([sel, key]) => {
+                const layer = page.querySelector('.lp-bg-layer[data-layer="' + key + '"]');
                 if (!layer) return;
-                gsap.to(layer, {
+                gsap.fromTo(layer, { opacity: 0 }, {
                     opacity: 1,
                     ease: 'none',
                     scrollTrigger: {
                         trigger: sel,
-                        start: 'top 80%',
-                        end: 'top 30%',
+                        start: 'top 88%',
+                        end: 'top 38%',
                         scrub: true,
                         scroller: page,
                     },
                 });
             });
         }, page);
+
+        // 登出返回时页面从 display:none 恢复，需全局刷新触发器测量
+        requestAnimationFrame(() => {
+            if (typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+        });
     }
 
     function loginCleanup() {

@@ -3,8 +3,8 @@
  * 纯 JS、无第三方依赖，性能友好（requestAnimationFrame 节流）。
  */
 (function () {
-    var SPOT = '.lp-feature-card, .g-card, .suggestion-card, .lp-auth-card, .lp-showcase-media';
-    var TILT = '.lp-feature-card, .g-card, .suggestion-card';
+    var SPOT = '.lp-feature-card, .g-card, .book-page, .suggestion-card, .lp-auth-card, .lp-showcase-media';
+    var TILT = '.lp-feature-card, .suggestion-card';
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var rafId = null;

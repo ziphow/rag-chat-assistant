@@ -339,7 +339,7 @@ function createMessageElement(msg) {
 
     const avatarHtml = msg.role === 'user'
         ? '<img src="' + (window.Avatar && typeof window.Avatar.currentSrc === 'function' ? window.Avatar.currentSrc() : 'assets/avatars/avatar-0.png') + '" alt="我" class="avatar-img">'
-        : '<img src="ai-avatar.jpg" alt="AI" class="avatar-img">';
+        : '<img src="assets/avatars/ai-avatar.jpg" alt="AI" class="avatar-img">';
 
     let contentHtml = '';
 
@@ -435,7 +435,7 @@ function showTypingIndicator() {
     typingDiv.className = 'message ai';
     typingDiv.id = 'typing-indicator-msg';
     typingDiv.innerHTML = `
-        <div class="message-avatar"><img src="ai-avatar.jpg" alt="AI" class="avatar-img"></div>
+        <div class="message-avatar"><img src="assets/avatars/ai-avatar.jpg" alt="AI" class="avatar-img"></div>
         <div class="message-content">
             <div class="message-bubble">
                 <div class="typing-indicator">
