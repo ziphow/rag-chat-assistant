@@ -1,0 +1,57 @@
+# Docker Compose 编排：MySQL + 后端 FastAPI + 前端 nginx
+# 用法：docker compose up -d --build
+# 环境变量默认值可用根目录 .env 或 shell 环境覆盖（例如 MYSQL_ROOT_PASSWORD）
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-dev-root-password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-rag_chat}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      # 指向 compose 内的 MySQL 服务名 db（覆盖 .env 里的 localhost 值）
+      DATABASE_URL: mysql+aiomysql://root:${MYSQL_ROOT_PASSWORD:-dev-root-password}@db:3306/${MYSQL_DATABASE:-rag_chat}
+      # 部署后前端与后端同源，文件地址走相对路径
+      BACKEND_BASE_URL: ""
+    working_dir: /app
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+    # 仅暴露给 compose 内部网络，由 frontend 的 nginx 反代，不直接对外
+    expose:
+      - "8000"
+    # 如需在宿主机直接调试后端，取消下一行注释：
+    # ports:
+    #   - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:

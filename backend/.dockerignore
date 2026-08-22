@@ -1,0 +1,27 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# 敏感/运行数据（不进镜像，由 compose 注入 env + 挂载 volume）
+.env
+data/
+uploads/
+*.db
+*.db-shm
+*.db-wal
+
+# 版本控制与工具目录
+.git/
+.gitignore
+.idea/
+.vscode/
+
+# 测试与日志
+test/
+*.log
+*.ipynb
+.DS_Store
+Thumbs.db

@@ -112,7 +112,7 @@ load_dotenv()
 
 #创建异步引擎
 engine = create_async_engine(
-    os.getenv("DATABASE_URL"), echo=True
+    os.getenv("DATABASE_URL"), echo=False,pool_pre_ping=True
 )
 
 # 异步创建表
