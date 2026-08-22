@@ -63,29 +63,39 @@ async def event_stream(message : UserMessage,session,):
     human_message = HumanMessage(content=content_blocks)
     # 用 stream_mode="messages" 拿到 token 级别流式
     agent = await get_agent()
-    async for msg, metadata in agent.astream(
-        {
-            "messages": [human_message]
-        },
-        stream_mode="messages",
-        config={"configurable": {"thread_id": message.chat_id}},
-        context=AgentContext(temp_instruction=temp_instruction)
-    ):
-        # ★ 只处理 AI 消息块，跳过工具消息(ToolMessage)等
-        if not isinstance(msg, AIMessageChunk):
-            continue
-        # ★ 透传思考过程（Qwen 等模型的 reasoning_content 增量）
-        thinking = getattr(msg, "additional_kwargs", {}).get("reasoning_content")
-        if thinking:
-            thinking_content += thinking
-            yield f"data: {json.dumps({'type': 'thinking', 'content': thinking})}\n\n"
-        # ★ 跳过工具调用请求（content 为空的是工具调用指令，不是回复内容）
-        content = getattr(msg, 'content', None)
-        if not content:
-            continue
+    try:
+        async for msg, metadata in agent.astream(
+            {
+                "messages": [human_message]
+            },
+            stream_mode="messages",
+            config={"configurable": {"thread_id": message.chat_id}},
+            context=AgentContext(temp_instruction=temp_instruction)
+        ):
+            # ★ 只处理 AI 消息块，跳过工具消息(ToolMessage)等
+            if not isinstance(msg, AIMessageChunk):
+                continue
+            # ★ 透传思考过程（Qwen 等模型的 reasoning_content 增量）
+            thinking = getattr(msg, "additional_kwargs", {}).get("reasoning_content")
+            if thinking:
+                thinking_content += thinking
+                yield f"data: {json.dumps({'type': 'thinking', 'content': thinking})}\n\n"
+            # ★ 跳过工具调用请求（content 为空的是工具调用指令，不是回复内容）
+            content = getattr(msg, 'content', None)
+            if not content:
+                continue
 
-        full_content += content
-        yield f"data: {json.dumps({'type': 'chunk', 'content': content})}\n\n"
+            full_content += content
+            yield f"data: {json.dumps({'type': 'chunk', 'content': content})}\n\n"
+    except Exception as e:
+        if is_quota_error(e):
+            # 固化切换：剔除当前模型、切换下一个，并使上一次构建的 agent 失效以便重建
+            import app.ai.agent as agent_mod
+            agent_mod.chat_manager.mark_current_unavailable()
+            agent_mod.invalidate_agent()
+            yield f"data: {json.dumps({'type': 'error', 'content': '模型额度用尽，已自动切换模型，请重新发送消息'})}\n\n"
+            return
+        raise
 
     # 保存 AI 消息（连同思考过程，便于持久化展示）
     ai_message = Message(

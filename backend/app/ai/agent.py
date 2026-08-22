@@ -96,13 +96,17 @@ web_search = TavilySearch(
     topic="general"
 )
 # -----------------------------定义智能体的模型(大脑)-----------------------------
-llm = init_chat_model(
-    model="qwen3.7-plus",
-    model_provider="openai",
-    api_key=os.getenv("DASHSCOPE_API_KEY"),
-    base_url=os.getenv("DASHSCOPE_BASE_URL"),
-    extra_body={"enable_thinking":True},
-)
+def _build_chat_llm(model: str):
+    return init_chat_model(
+        model=model,
+        model_provider="openai",
+        api_key=os.getenv("DASHSCOPE_API_KEY"),
+        base_url=os.getenv("DASHSCOPE_BASE_URL"),
+        extra_body={"enable_thinking": True},
+    )
+
+from app.ai.qwen_manager import ModelQuotaManager
+chat_manager = ModelQuotaManager("LLM_MODEL_PRIORITY", ["qwen3.7-plus"], _build_chat_llm)
 # --------------------------定义智能体的记忆管理策略---------------------------
 # 定义用来做摘要的模型
 middleware_llm = init_chat_model(
@@ -121,10 +125,17 @@ middleware=SummarizationMiddleware(
 
 # -------------------------------创建智能体---------------------------------
 _agent = None
+_agent_model = None
+
+def invalidate_agent():
+    """模型切换后需重建 agent。"""
+    global _agent, _agent_model
+    _agent = None
+    _agent_model = None
 
 async def get_agent():
-    global _agent
-    if _agent is not None:
+    global _agent, _agent_model
+    if _agent is not None and _agent_model == chat_manager.current_model:
         return _agent
     # ---定义智能体的记忆管理（数据库）
     # 基于sqlite轻量级数据库实现的记忆管理策略
@@ -134,6 +145,7 @@ async def get_agent():
     checkpointer=AsyncSqliteSaver(connection)
     await checkpointer.setup()
 
+    llm = chat_manager.current_llm()
     _agent  = create_agent(
         llm,
         tools=[get_time,web_search],
@@ -142,6 +154,7 @@ async def get_agent():
         context_schema=AgentContext,
         #response_format=AnswerInfo, # 结构化输出
     )
+    _agent_model = chat_manager.current_model
     return _agent
 
 # ------------------------------- 删除对话记忆的函数 ---------------------------------

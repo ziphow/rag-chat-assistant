@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 from langchain_chroma import Chroma
 from langchain_community.embeddings import DashScopeEmbeddings
@@ -8,7 +9,7 @@ load_dotenv()
 
 # 全局共享的嵌入模型
 TextEmbeddingModel = DashScopeEmbeddings(
-    model="qwen3.7-text-embedding",
+    model=os.getenv("EMBEDDING_MODEL", "qwen3.7-text-embedding"),
 )
 
 @lru_cache(maxsize=128)  # 缓存最多 128 个知识库实例
