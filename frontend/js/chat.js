@@ -326,7 +326,9 @@ function renderMessages(options = {}) {
         window.Anim.messageEnter(msgs[msgs.length - 1]);
     }
 
-    scrollToBottom();
+    if (!options.preserveScroll) {
+        scrollToBottom();
+    }
 }
 
 /**
@@ -342,6 +344,20 @@ function createMessageElement(msg) {
         : '<img src="assets/avatars/ai-avatar.jpg" alt="AI" class="avatar-img">';
 
     let contentHtml = '';
+
+    // 思考过程（历史持久化展示）——默认折叠，可点击展开
+    if (msg.role === 'ai' && msg.thinking) {
+        contentHtml += `
+            <div class="message-thinking collapsed" data-expanded="false">
+                <div class="thinking-header" onclick="toggleThinking(this)">
+                    <span class="thinking-chevron">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </span>
+                    <span class="thinking-title">思考过程</span>
+                </div>
+                <div class="thinking-body"></div>
+            </div>`;
+    }
 
     // 文本内容（Markdown 渲染）
     if (msg.content) {
@@ -399,6 +415,12 @@ function createMessageElement(msg) {
         </div>
     `;
 
+    // 填充历史思考文本（textContent 赋值，天然转义，防注入）
+    if (msg.role === 'ai' && msg.thinking) {
+        const body = messageDiv.querySelector('.message-thinking .thinking-body');
+        if (body) body.textContent = msg.thinking;
+    }
+
     return messageDiv;
 }
 
@@ -421,6 +443,61 @@ function updateMessageBubble(msgEl, content) {
     }
     if (bubble) {
         bubble.innerHTML = renderMarkdown(content);
+    }
+}
+
+// ==================== 思考过程区块 ====================
+
+/** 获取/创建思考区块（默认展开），插入在消息气泡上方 */
+function getThinkingBlock(msgEl) {
+    let block = msgEl.querySelector('.message-thinking');
+    if (block) return block;
+    const contentDiv = msgEl.querySelector('.message-content');
+    if (!contentDiv) return null;
+    block = document.createElement('div');
+    block.className = 'message-thinking';
+    block.dataset.expanded = 'true';
+    block.innerHTML = `
+        <div class="thinking-header" onclick="toggleThinking(this)">
+            <span class="thinking-chevron">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+            <span class="thinking-title">思考过程</span>
+        </div>
+        <div class="thinking-body"></div>
+    `;
+    contentDiv.insertBefore(block, contentDiv.firstChild);
+    return block;
+}
+
+/** 追加思考文本到思考区块 */
+function appendThinkingBlock(msgEl, text) {
+    const block = getThinkingBlock(msgEl);
+    if (!block) return;
+    const body = block.querySelector('.thinking-body');
+    if (!body) return;
+    body.appendChild(document.createTextNode(text));
+}
+
+/** 折叠/展开思考区块 */
+function toggleThinking(header) {
+    const block = header.closest('.message-thinking');
+    if (!block) return;
+    if (block.classList.contains('collapsed')) {
+        block.classList.remove('collapsed');
+        block.dataset.expanded = 'true';
+    } else {
+        block.classList.add('collapsed');
+        block.dataset.expanded = 'false';
+    }
+}
+
+/** 收起思考区块（通常用于开始正式回答时） */
+function collapseThinking(msgEl) {
+    const block = msgEl.querySelector('.message-thinking');
+    if (block && !block.classList.contains('collapsed')) {
+        block.classList.add('collapsed');
+        block.dataset.expanded = 'false';
     }
 }
 
@@ -566,6 +643,7 @@ async function sendMessage() {
             const aiMessage = {
                 role: 'ai',
                 content: '',
+                thinking: '',
                 images: [],
                 files: [],
                 timestamp: new Date().toISOString(),
@@ -596,6 +674,9 @@ async function sendMessage() {
 
             // 逐块读取 SSE 事件
             let hasContent = false;
+            let thinkingShown = false;
+            let thinkingCollapsed = false;
+            let thinkingContent = '';
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let buffer = '';
@@ -614,15 +695,36 @@ async function sendMessage() {
                         const data = JSON.parse(line.slice(6));
                         if (data.type === 'start') {
                             // 保持"思考中"显示
+                        } else if (data.type === 'thinking') {
+                            // 展示思考过程（默认展开），开始正式回答后自动折叠
+                            const t = data.content || '';
+                            if (t) {
+                                thinkingContent += t;
+                                if (!thinkingShown) {
+                                    thinkingShown = true;
+                                    getThinkingBlock(aiMsgEl);
+                                }
+                                appendThinkingBlock(aiMsgEl, t);
+                                scrollToBottomIfNear();
+                            }
                         } else if (data.type === 'chunk' || data.type === 'delta') {
+                            // 收到第一段正式回答时自动折叠思考过程
+                            if (!hasContent && thinkingShown && !thinkingCollapsed) {
+                                collapseThinking(aiMsgEl);
+                                thinkingCollapsed = true;
+                            }
                             if (!hasContent) hasContent = true;
                             aiMessage.content += data.content || '';
                             updateMessageBubble(aiMsgEl, aiMessage.content);
-                            scrollToBottom();
+                            scrollToBottomIfNear();
                         } else if (data.type === 'done' || data.type === 'end') {
                             if (data.content) aiMessage.content = data.content;
+                            if (thinkingContent && aiMessage.thinking !== thinkingContent) {
+                                aiMessage.thinking = thinkingContent;
+                            }
                             if (window.Anim) window.Anim.stopStreamPulse(aiMsgEl);
-                            renderMessages();
+                            // 重新渲染以带上思考区，但不强行滚动，避免打断用户上滑
+                            renderMessages({ preserveScroll: true });
                         } else if (data.type === 'error') {
                             throw new Error(data.content || data.message || 'AI 回复失败');
                         }
@@ -644,11 +746,12 @@ async function sendMessage() {
             hideTypingIndicator();
 
             const aiMessage = {
-                role: 'ai',
-                content: res.data.aiMessage.content,
-                images: [],
-                files: [],
-                timestamp: new Date().toISOString(),
+            role: 'ai',
+            content: res.data.aiMessage.content,
+            thinking: res.data.aiMessage.thinking || '',
+            images: [],
+            files: [],
+            timestamp: new Date().toISOString(),
             };
             chat.messages.push(aiMessage);
             renderMessages({ animateLast: true });

@@ -4,6 +4,9 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import SummarizationMiddleware
 from langchain.chat_models import init_chat_model
 
+# 透传 Qwen 等模型的思考内容（reasoning_content），以便在对话中展示思考过程
+import app.ai.reasoning_patch as _reasoning_patch  # noqa: F401
+
 import aiosqlite
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 

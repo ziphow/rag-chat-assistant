@@ -17,6 +17,7 @@ async def event_stream(message : UserMessage,session,):
     yield f"data: {json.dumps({'type': 'start'})}\n\n"
 
     full_content = ""
+    thinking_content = ""
     # 构造消息
     content_blocks = []
     temp_instruction = None
@@ -73,6 +74,11 @@ async def event_stream(message : UserMessage,session,):
         # ★ 只处理 AI 消息块，跳过工具消息(ToolMessage)等
         if not isinstance(msg, AIMessageChunk):
             continue
+        # ★ 透传思考过程（Qwen 等模型的 reasoning_content 增量）
+        thinking = getattr(msg, "additional_kwargs", {}).get("reasoning_content")
+        if thinking:
+            thinking_content += thinking
+            yield f"data: {json.dumps({'type': 'thinking', 'content': thinking})}\n\n"
         # ★ 跳过工具调用请求（content 为空的是工具调用指令，不是回复内容）
         content = getattr(msg, 'content', None)
         if not content:
@@ -81,8 +87,13 @@ async def event_stream(message : UserMessage,session,):
         full_content += content
         yield f"data: {json.dumps({'type': 'chunk', 'content': content})}\n\n"
 
-    # 保存 AI 消息
-    ai_message = Message(chat_id=message.chat_id, role="ai", content=full_content)
+    # 保存 AI 消息（连同思考过程，便于持久化展示）
+    ai_message = Message(
+        chat_id=message.chat_id,
+        role="ai",
+        content=full_content,
+        thinking=thinking_content or None,
+    )
     session.add(ai_message)
 
     await session.flush()

@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 
-from app.database import create_db_and_tables
+from app.database import create_db_and_tables, engine
 from app.routers.auth import router as auth_router
 from app.routers.chats import router as chat_router
 from app.routers.messages import router as message_router

@@ -51,6 +51,7 @@ class Message(SQLModel, table=True):
     chat_id: int = Field(foreign_key="chats.id", nullable=False)  # 外键，非空
     role: str = Field(max_length=10, nullable=False)   # "user" 或 "ai"
     content: str = Field(sa_type=Text, nullable=False) # 使用 TEXT 类型
+    thinking: Optional[str] = Field(default=None, sa_type=Text) # AI 的思考过程，可为空
     images: Optional[list] = Field(default=None, sa_type=JSON)  # JSON 字段，可为空
     files: Optional[list] = Field(default=None, sa_type=JSON)   # JSON 字段，可为空
     created_at: datetime = Field(

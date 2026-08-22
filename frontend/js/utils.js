@@ -106,6 +106,14 @@ function scrollToBottom() {
     listEl.scrollTop = listEl.scrollHeight;
 }
 
+/** 仅在用户停留在底部附近时滚到最新；用户已上滑查看时不打扰 */
+function scrollToBottomIfNear(threshold = 120) {
+    const listEl = document.getElementById('message-list');
+    if (!listEl) return;
+    const dist = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight;
+    if (dist < threshold) listEl.scrollTop = listEl.scrollHeight;
+}
+
 // ==================== 输入框 ====================
 
 /** 自动调整 textarea 高度（随内容增长） */

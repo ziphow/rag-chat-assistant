@@ -4303,3 +4303,41 @@ html[data-theme='light'] .avatar-option:hover { background: rgba(0, 0, 0, 0.05);
     .lp-gallery { height: auto; padding: 90px 0 110px; }
     .gallery-stage { position: relative; top: auto; height: auto; min-height: 64vh; }
 }
+
+/* ============ 思考过程区块 ============ */
+.message-thinking {
+    border: 1px solid var(--t-border, var(--border-color));
+    border-radius: var(--radius-md);
+    background: var(--t-panel, var(--bg-message-ai));
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 100%;
+}
+.message-thinking .thinking-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    user-select: none;
+    transition: background .15s ease;
+}
+.message-thinking .thinking-header:hover { background: var(--t-hover, rgba(0, 0, 0, 0.04)); }
+.message-thinking .thinking-chevron {
+    display: inline-flex;
+    transition: transform .2s ease;
+}
+.message-thinking .thinking-title { font-weight: 600; letter-spacing: .2px; }
+.message-thinking .thinking-body {
+    padding: 2px 12px 12px;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+.message-thinking.collapsed .thinking-body { display: none; }
+.message-thinking.collapsed .thinking-chevron { transform: rotate(-90deg); }
