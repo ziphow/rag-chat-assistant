@@ -56,7 +56,6 @@ async def register(
     ))
     res = await session.exec(stmt)
     result = res.first()
-    session.flush()
     if result is not None:
         raise HTTPException(status_code=409, detail="用户名或邮箱已被注册！")
 

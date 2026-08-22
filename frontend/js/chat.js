@@ -72,11 +72,33 @@ function renderSuggestions() {
     if (window.Anim) window.Anim.staggerSuggestions();
 }
 
-/** 切换侧边栏收起/展开状态 */
+/** 切换侧边栏收起/展开状态（移动端同时管理半透明遮罩） */
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
+    const isMobile = window.matchMedia('(max-width: 900px)').matches;
+    const willCollapse = !sidebar.classList.contains('collapsed');
+
     sidebar.classList.toggle('collapsed');
+
+    if (isMobile) {
+        // 移动端展开时显示遮罩层，收起/点击遮罩时移除
+        let backdrop = document.getElementById('sidebar-backdrop');
+        if (willCollapse) {
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.id = 'sidebar-backdrop';
+                backdrop.className = 'sidebar-backdrop';
+                backdrop.addEventListener('click', () => {
+                    sidebar.classList.add('collapsed');
+                    backdrop.remove();
+                });
+                document.body.appendChild(backdrop);
+            }
+        } else if (backdrop) {
+            backdrop.remove();
+        }
+    }
 }
 
 // ==================== 复制 AI 消息 ====================

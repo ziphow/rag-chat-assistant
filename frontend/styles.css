@@ -4339,5 +4339,106 @@ html[data-theme='light'] .avatar-option:hover { background: rgba(0, 0, 0, 0.05);
     max-height: 60vh;
     overflow-y: auto;
 }
+
+/* ==================== 移动端适配增强 ==================== */
+
+/* 侧边栏移动端遮罩层 */
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 99;               /* 侧边栏 z-index 为 100，遮罩在其下 */
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    transition: opacity 0.25s ease;
+}
+
+@media (max-width: 900px) {
+    /* 收窄侧边栏宽度，避免在手机上占据过大屏幕 */
+    :root {
+        --sidebar-width: 248px;
+    }
+}
+
+/* 登录卡片在手机上缩放内边距与圆角 */
+@media (max-width: 560px) {
+    .lp-auth-card {
+        padding: 28px 20px;
+        border-radius: 18px;
+    }
+    .lp-auth-tabs { margin-bottom: 22px; }
+    .lp-auth-section { padding-top: 24px; padding-bottom: 56px; }
+    .form-group { gap: 6px; }
+}
+
+/* 头像选择器：小屏缩小头像、改为 3 列，避免横向截断 */
+@media (max-width: 560px) {
+    .avatar-picker-panel {
+        width: min(430px, 94vw);
+        padding: 20px 16px;
+    }
+    .avatar-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    .avatar-option img {
+        width: 56px;
+        height: 56px;
+    }
+    .avatar-option { padding: 10px 4px; }
+}
+
+/* 安全区适配：底部输入栏、设置面板等避开全面屏手势条 */
+@media (max-width: 900px) {
+    body {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .chat-input-area,
+    .settings-panel,
+    .avatar-picker-panel {
+        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+/* ==================== 移动端：登录页滚动/溢出修复 ==================== */
+/* 根治「下拉旋转图片后无法上拉」：横向溢出会锁定触屏滚动链 */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+}
+
+@media (max-width: 720px) {
+    /* 翻书容器收紧到屏宽内，禁止横向溢出，保证纵向滚动链不被破坏 */
+    .lp-book-viewport {
+        overflow-x: hidden;
+        overflow-y: visible;
+    }
+    .book-scene {
+        max-width: 100%;
+    }
+    .book-cover--back {
+        inset: -18px -20px -18px -20px;
+    }
+    .gallery-stage,
+    #carousel,
+    .carousel-ellipse {
+        max-width: 100%;
+        overflow: visible;
+    }
+    /* 消除任何会造成横向滚动的元素 */
+    .login-page .lp-gallery,
+    .login-page .lp-showcase,
+    .lp-auth-section {
+        overflow-x: hidden;
+    }
+}
+
+/* 触屏拖拽时不破坏纵向滚动：仅当明确横向滑动时才接管，交给 CSS touch-action */
+@media (pointer: coarse) {
+    .gallery-stage {
+        touch-action: pan-y;
+    }
+}
 .message-thinking.collapsed .thinking-body { display: none; }
 .message-thinking.collapsed .thinking-chevron { transform: rotate(-90deg); }

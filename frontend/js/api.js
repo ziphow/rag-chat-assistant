@@ -32,7 +32,14 @@ async function request(url, options = {}) {
         headers,
     });
 
-    const data = await response.json();
+    // 健壮解析：后端可能返回纯文本/HTML（如网关错误页、异常页），统一降级为 {message}
+    let data = {};
+    try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : {};
+    } catch {
+        data = { message: await response.text().catch(() => `请求失败 (${response.status})`) };
+    }
 
     // 401 处理：区分认证接口和非认证接口
     if (response.status === 401) {

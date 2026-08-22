@@ -63,6 +63,10 @@
     var FRICTION = 0.97;       // 转轴「润滑油」：越大松手后滑行越久
     var WHEEL_SENS = 0.03;     // 滚轮每 1 deltaY 的角速度增量
     var DRAG_SENS = 0.5;       // 水平拖拽每 1px 的旋转角度（跟手）
+    // 触屏（移动端）灵敏度更高，滑动更跟手
+    if (window.matchMedia('(pointer: coarse)').matches) {
+        DRAG_SENS = 0.9;
+    }
     var MAX_VEL = 32;          // 角速度上限，避免一次甩飞
     var MIN_VEL = 0.01;        // 低于此值视为静止
 
