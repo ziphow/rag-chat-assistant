@@ -24,4 +24,9 @@ SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-change-me-in-production")
 # Token 有效期（分钟），默认 1440 = 24 小时
 ACCESS_TOKEN_EXPIRE_MINUTES:int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
+# 模型优先级列表（逗号分隔）：额度用尽自动切换到下一个
+LLM_MODEL_PRIORITY: str = os.getenv("LLM_MODEL_PRIORITY", "qwen3.7-plus")
+TITLE_MODEL_PRIORITY: str = os.getenv("TITLE_MODEL_PRIORITY", "qwen3.7-plus")
+EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "qwen3.7-text-embedding")
+
 
