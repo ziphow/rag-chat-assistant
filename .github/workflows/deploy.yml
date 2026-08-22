@@ -24,25 +24,26 @@ jobs:
       - name: Analyze changed files
         id: diff
         run: |
-          # 获取上一提交与本次提交的文件差异列表（首次部署时用全部文件）
+          set +e
+          # 获取上一提交与本次提交的文件差异列表
           EARLIER="${{ github.event.before }}"
           if [ "$EARLIER" = "0000000000000000000000000000000000000000" ]; then
-            CHANGED=$(git diff --name-only HEAD~1 HEAD || git ls-files)
+            CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || git ls-files)
           else
-            CHANGED=$(git diff --name-only $EARLIER...HEAD -- . ':!.github' ':!README.md' ':!docs' ':!*.md' || true)
+            CHANGED=$(git diff --name-only $EARLIER...HEAD -- . ':!.github' ':!README.md' ':!docs' ':!*.md' 2>/dev/null)
           fi
           echo "changed=$CHANGED"
 
-          # 判断后端是否有代码/依赖变化
-          BACKEND_HIT=$(echo "$CHANGED" | grep -cE '^backend/' && true)
-          # 判断前端是否有代码/配置变化
-          FRONTEND_HIT=$(echo "$CHANGED" | grep -cE '^frontend/' && true)
-          # 判断 compose / dockerfile 是否变化（两者都要重建）
-          INFRA_HIT=$(echo "$CHANGED" | grep -cE '^compose\.yaml|Dockerfile|docker-compose' && true)
+          # 用 grep -c 统计；无匹配时 grep 返回1，这里用 || true 避免被误判为失败
+          BACKEND_HIT=$(echo "$CHANGED" | grep -cE '^backend/' || true)
+          FRONTEND_HIT=$(echo "$CHANGED" | grep -cE '^frontend/' || true)
+          INFRA_HIT=$(echo "$CHANGED" | grep -cE '^compose\.ya*ml|Dockerfile|docker-compose' || true)
 
-          echo "backend_hit=$BACKEND_HIT"    >> $GITHUB_OUTPUT
-          echo "frontend_hit=$FRONTEND_HIT"  >> $GITHUB_OUTPUT
-          echo "infra_hit=$INFRA_HIT"        >> $GITHUB_OUTPUT
+          # 转为数字输出
+          echo "backend_hit=$(test $BACKEND_HIT -gt 0 && echo 1 || echo 0)" >> $GITHUB_OUTPUT
+          echo "frontend_hit=$(test $FRONTEND_HIT -gt 0 && echo 1 || echo 0)" >> $GITHUB_OUTPUT
+          echo "infra_hit=$(test $INFRA_HIT -gt 0 && echo 1 || echo 0)" >> $GITHUB_OUTPUT
+          echo "✅ 分析完成：backend=$BACKEND_HIT frontend=$FRONTEND_HIT infra=$INFRA_HIT"
 
       # 3. 无关文件变化（仅.README/.md/docs等）时直接跳过部署，不再继续
       - name: Skip if only unrelated files
