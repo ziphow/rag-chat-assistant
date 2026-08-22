@@ -1,0 +1,104 @@
+name: Deploy to Server (CI/CD)
+
+# 仅当推送到 main 分支且有实际代码改动时触发
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Smart Deploy
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.event.head_commit.message, '[skip-ci]')"
+    steps:
+      # 1. 检出最新代码
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. 分析本次改动的文件，判断是否需要部署、改哪个服务
+      - name: Analyze changed files
+        id: diff
+        run: |
+          # 获取上一提交与本次提交的文件差异列表（首次部署时用全部文件）
+          EARLIER="${{ github.event.before }}"
+          if [ "$EARLIER" = "0000000000000000000000000000000000000000" ]; then
+            CHANGED=$(git diff --name-only HEAD~1 HEAD || git ls-files)
+          else
+            CHANGED=$(git diff --name-only $EARLIER...HEAD -- . ':!.github' ':!README.md' ':!docs' ':!*.md' || true)
+          fi
+          echo "changed=$CHANGED"
+
+          # 判断后端是否有代码/依赖变化
+          BACKEND_HIT=$(echo "$CHANGED" | grep -cE '^backend/' && true)
+          # 判断前端是否有代码/配置变化
+          FRONTEND_HIT=$(echo "$CHANGED" | grep -cE '^frontend/' && true)
+          # 判断 compose / dockerfile 是否变化（两者都要重建）
+          INFRA_HIT=$(echo "$CHANGED" | grep -cE '^compose\.yaml|Dockerfile|docker-compose' && true)
+
+          echo "backend_hit=$BACKEND_HIT"    >> $GITHUB_OUTPUT
+          echo "frontend_hit=$FRONTEND_HIT"  >> $GITHUB_OUTPUT
+          echo "infra_hit=$INFRA_HIT"        >> $GITHUB_OUTPUT
+
+      # 3. 无关文件变化（仅.README/.md/docs等）时直接跳过部署，不再继续
+      - name: Skip if only unrelated files
+        run: |
+          echo "backend_hit=${{ steps.diff.outputs.backend_hit }} frontend_hit=${{ steps.diff.outputs.frontend_hit }} infra_hit=${{ steps.diff.outputs.infra_hit }}"
+          if [ "${{ steps.diff.outputs.backend_hit }}" = "0" ] && [ "${{ steps.diff.outputs.frontend_hit }}" = "0" ] && [ "${{ steps.diff.outputs.infra_hit }}" = "0" ]; then
+            echo "⚠️ 本次改动仅涉及文档/无关文件（.md/README/docs/CI 自身），跳过部署，不会重启服务。"
+            exit 0
+          fi
+
+      # 4. 校验私钥存在（安全门禁）
+      - name: Verify SSH key secret exists
+        run: |
+          if [ -z "${{ secrets.SERVER_SSH_KEY }}" ]; then
+            echo "❌ 缺少 SERVER_SSH_KEY secret，无法部署。请在仓库 Settings→Secrets 配置。"
+            exit 1
+          fi
+
+      # 5. 通过 SSH 执行服务器部署（git pull + 按需重建）
+      - name: Deploy via SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+      - name: Run deploy on server
+        env:
+          HOST: ${{ secrets.SERVER_HOST }}
+          USER:  ${{ secrets.SERVER_USER }}
+          PORT:  ${{ secrets.SERVER_PORT }}
+        run: |
+          set -e
+          echo "连接服务器 $USER@$HOST:$PORT 并执行智能部署..."
+          ssh -o StrictHostKeyChecking=accept-new -p "$PORT" "$USER@$HOST" "
+            set -e
+            cd ~/app
+            echo '--- 拉取最新代码 ---'
+            git pull --ff-only origin main
+            BACKEND_HIT='${{ steps.diff.outputs.backend_hit }}'
+            FRONTEND_HIT='${{ steps.diff.outputs.frontend_hit }}'
+            INFRA_HIT='${{ steps.diff.outputs.infra_hit }}'
+            # 构建参数：后端/前端/基础设施变才 rebuild 对应服务，否则只 pull 不重启
+            if [ \"\$INFRA_HIT\" != \"0\" ]; then
+              echo '--- 基础设施变化：重建全部服务 ---'
+              docker compose up -d --build
+            elif [ \"\$BACKEND_HIT\" != \"0\" ] && [ \"\$FRONTEND_HIT\" != \"0\" ]; then
+              echo '--- 前后端都变化：重建 backend + frontend ---'
+              docker compose up -d --build backend frontend
+            elif [ \"\$BACKEND_HIT\" != \"0\" ]; then
+              echo '--- 仅后端变化：只重建 backend ---'
+              docker compose up -d --build backend
+            elif [ \"\$FRONTEND_HIT\" != \"0\" ]; then
+              echo '--- 仅前端变化：只重建 frontend ---'
+              docker compose up -d --build frontend
+            else
+              echo '--- 无有效变化，跳过 rebuild ---'
+            fi
+            echo '--- 部署完成 ---'
+            docker compose ps
+          "
+          echo "✅ 部署命令执行完毕"
