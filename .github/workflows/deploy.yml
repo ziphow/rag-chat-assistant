@@ -1,9 +1,16 @@
 name: Deploy to Server (CI/CD)
 
 # 仅当推送到 main 分支且有实际代码改动时触发
+# paths-ignore：文档/CI 自身等与运行无关的改动不会触发部署
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'README*'
+      - 'docs/**'
+      - '.github/**'
+      - 'tools/**'
 
 permissions:
   contents: read
