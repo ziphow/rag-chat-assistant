@@ -11,6 +11,7 @@ from app.routers.chats import router as chat_router
 from app.routers.messages import router as message_router
 from app.routers.files import router as file_router
 from app.routers.knowledge_bases import router as knowledge_base_router
+from app.services.file_utils import cleanup_orphan_uploads
 
 # 定义 lifespan 上下文管理器
 @asynccontextmanager
@@ -20,6 +21,11 @@ async def lifespan(app: FastAPI):
         os.makedirs(d, exist_ok=True)
     print("服务器启动成功")
     await create_db_and_tables() # 异步创建系统数据库表
+    # 清理超过 24h 未被任何消息引用的孤儿上传文件（防占满小磁盘）
+    try:
+        await cleanup_orphan_uploads(engine, max_age_hours=24)
+    except Exception as e:  # 清理失败不阻塞启动
+        print(f"孤儿文件清理跳过: {e}")
     yield
     print("服务器关闭成功")
 

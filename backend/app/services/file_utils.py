@@ -93,3 +93,52 @@ def delete_files_from_messages(messages):
         except OSError:
             # 删除失败不影响主流程
             pass
+
+
+# ==================== 孤儿文件清理 ====================
+
+def _basename_if_local(url):
+    """返回本地 uploads 文件的文件名；外部 URL 返回 None"""
+    if not url or "/uploads/" not in url:
+        return None
+    return os.path.basename(url.split("/uploads/", 1)[1].lstrip("/"))
+
+
+async def cleanup_orphan_uploads(engine, max_age_hours=24):
+    """
+    清理 uploads 目录中的孤儿文件：未被任何消息引用、且修改时间超过指定时长的文件。
+    用于磁盘较小的部署环境，防止上传失败/未发送的中途文件长期残留占满磁盘。
+    """
+    import os
+    import time
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from sqlmodel import select
+    from app.database import Message
+
+    UPLOAD_DIR = "uploads"
+    referenced = set()
+    async with AsyncSession(engine) as session:
+        rows = (await session.exec(select(Message))).all()
+        for m in rows:
+            for img in (m.images or []):
+                name = _basename_if_local((img or {}).get("url"))
+                if name:
+                    referenced.add(name)
+            for f in (m.files or []):
+                name = _basename_if_local((f or {}).get("url"))
+                if name:
+                    referenced.add(name)
+
+    if not os.path.isdir(UPLOAD_DIR):
+        return
+
+    cutoff = time.time() - max_age_hours * 3600
+    for fname in os.listdir(UPLOAD_DIR):
+        if fname in referenced:
+            continue
+        path = os.path.join(UPLOAD_DIR, fname)
+        try:
+            if os.path.isfile(path) and os.path.getmtime(path) < cutoff:
+                os.remove(path)
+        except OSError:
+            pass
