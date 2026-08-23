@@ -735,6 +735,43 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
+/* 侧边栏顶部品牌区（logo + 名称） */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+.sidebar-brand-logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+.sidebar-brand-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: var(--text-primary);
+    flex: 1;
+}
+.sidebar-brand-close {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+.sidebar-brand-close:hover {
+    background: var(--bg-main);
+    color: var(--text-primary);
+}
+
 .btn-new-chat {
     width: 100%;
     padding: 12px 16px;
@@ -760,6 +797,9 @@ body {
 
 .sidebar-search {
     padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .search-box {
@@ -4155,10 +4195,14 @@ html[data-theme='light'] .avatar-option:hover { background: rgba(0, 0, 0, 0.05);
 .lp-gallery {
     position: relative;
     z-index: 1;
-    height: 280vh;         /* 滚动行程：为整圈旋转提供足够空间 */
+    height: 100vh;           /* 与圆筒同高，避免底部留下大片空白滚动区；圆筒尺寸由 JS 变量控制，不受此影响 */
     padding: 0;
     max-width: none;
     margin: 0;
+    /* 扩大旋转触发区到整个画廊区块：纵向滑动仍交还给页面滚动，横向才接管旋转 */
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .gallery-stage {
@@ -4294,8 +4338,19 @@ html[data-theme='light'] .avatar-option:hover { background: rgba(0, 0, 0, 0.05);
 }
 
 @media (max-width: 720px) {
-    .lp-gallery { height: 360vh; }
-    .gallery-stage { perspective: 900px; perspective-origin: 50% 46%; }
+    /* 手机端：画廊改为紧凑区块、放在页脚文案下方，不再占整屏；圆筒尺寸由 JS 变量控制，保持不变 */
+    .lp-gallery {
+        height: auto;
+        padding: 24px 0 40px;
+    }
+    .gallery-stage {
+        position: relative;
+        top: auto;
+        height: 42vh;
+        min-height: 220px;
+        perspective: 900px;
+        perspective-origin: 50% 46%;
+    }
     .carousel-ellipse { width: min(calc(var(--r, 360px) * 1.8), 92vw); height: 30px; }
 }
 
@@ -4357,6 +4412,13 @@ html[data-theme='light'] .avatar-option:hover { background: rgba(0, 0, 0, 0.05);
     /* 收窄侧边栏宽度，避免在手机上占据过大屏幕 */
     :root {
         --sidebar-width: 248px;
+    }
+
+    /* 侧边栏内顶部收起按钮：侧边栏展开时会覆盖顶栏汉堡按钮，用它来收起 */
+    .sidebar-brand-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 

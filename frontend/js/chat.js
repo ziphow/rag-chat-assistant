@@ -77,14 +77,15 @@ function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
     const isMobile = window.matchMedia('(max-width: 900px)').matches;
-    const willCollapse = !sidebar.classList.contains('collapsed');
+    const wasCollapsed = sidebar.classList.contains('collapsed');
 
     sidebar.classList.toggle('collapsed');
+    const opened = wasCollapsed;   // 之前收起 → 现在展开，需要建遮罩
+    const closed = !wasCollapsed;  // 之前展开 → 现在收起，需要移除遮罩
 
     if (isMobile) {
-        // 移动端展开时显示遮罩层，收起/点击遮罩时移除
         let backdrop = document.getElementById('sidebar-backdrop');
-        if (willCollapse) {
+        if (opened) {
             if (!backdrop) {
                 backdrop = document.createElement('div');
                 backdrop.id = 'sidebar-backdrop';
@@ -95,7 +96,7 @@ function toggleSidebar() {
                 });
                 document.body.appendChild(backdrop);
             }
-        } else if (backdrop) {
+        } else if (closed && backdrop) {
             backdrop.remove();
         }
     }

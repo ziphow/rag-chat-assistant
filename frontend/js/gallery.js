@@ -33,6 +33,9 @@
     var loginPage = document.getElementById('login-page');
     if (!stage || !carousel || !loginPage) return;
 
+    // 可触发旋转的区域：扩大到整个画廊区块（含四周留白），只要露出一丁点即可交互
+    var gallerySection = loginPage.querySelector('.lp-gallery') || stage;
+
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var hasGsap = typeof gsap !== 'undefined';
 
@@ -75,9 +78,12 @@
     var dragging = false;
     var dragStartRotation = 0;
     var dragStartX = 0;
+    var dragStartY = 0;        // 方向锁定的起点 Y（判断上滑/横向意图）
     var lastDragX = 0;
     var dragMoved = 0;         // 累计拖拽位移，用于区分点击与拖拽
     var instantV = 0;          // 拖拽过程中的瞬时角速度（松开后作为惯性初速度）
+    var dragAxis = null;       // 方向锁定：'h' 横向旋转 / 'v' 纵向滚动（null = 未锁定）
+    var AXIS_LOCK_THRESHOLD = 8; // 位移超过此值才锁定方向
 
     function applyTransform() {
         carousel.style.transform = 'translate(-50%, -50%) rotateY(' + rotation + 'deg)';
@@ -131,26 +137,53 @@
     }
 
     // 滚轮：上下滚动 → 转动。不 preventDefault，页面仍可正常上下滚动（不会锁定上滑）
-    stage.addEventListener('wheel', function (e) {
+    gallerySection.addEventListener('wheel', function (e) {
         spin(e.deltaY * WHEEL_SENS);
     }, { passive: true });
 
-    // 指针拖拽：水平拖动跟手旋转，垂直滑动留给页面滚动（配合 CSS touch-action: pan-y）
-    stage.addEventListener('pointerdown', function (e) {
+    // 指针拖拽：方向锁定 —— 首次位移超过阈值时判断主方向
+    //   横向为主 → 跟手旋转（拦截）
+    //   纵向为主 → 放弃旋转，交给页面垂直滚动（不阻止上滑）
+    gallerySection.addEventListener('pointerdown', function (e) {
         dragging = true;
         dragMoved = 0;
+        dragAxis = null;
         dragStartRotation = rotation;
         dragStartX = lastDragX = e.clientX;
+        dragStartY = e.clientY;
         instantV = 0;
         velocity = 0;
         stop();
-        stage.classList.add('dragging');
     });
 
-    stage.addEventListener('pointermove', function (e) {
+    // pointermove 绑到 document：拖拽起点更大，移出画廊区也不中断旋转
+    document.addEventListener('pointermove', function (e) {
         if (!dragging) return;
+
+        // 方向未锁定：累计位移判断主方向
+        if (dragAxis === null) {
+            var totalDX = e.clientX - dragStartX;
+            var totalDY = e.clientY - dragStartY;
+            if (Math.abs(totalDX) < AXIS_LOCK_THRESHOLD && Math.abs(totalDY) < AXIS_LOCK_THRESHOLD) {
+                return; // 位移太小，不锁定，等待更大移动
+            }
+            // 锁定方向：横向位移 >= 纵向位移 → 旋转；否则 → 放弃，交给页面滚动
+            dragAxis = (Math.abs(totalDX) >= Math.abs(totalDY)) ? 'h' : 'v';
+            if (dragAxis === 'h') {
+                // 进入旋转拖拽
+                stage.classList.add('dragging');
+            } else {
+                // 纵向滚动：彻底退出拖拽，不再接管本次指针
+                dragging = false;
+                return;
+            }
+        }
+
+        // 已锁定为横向旋转：跟手转动
         var dx = e.clientX - lastDragX;
         dragMoved += Math.abs(dx);
+        // 鼠标拖拽时阻止选中文本（触屏交给 CSS touch-action，不干预滚动链）
+        if (e.cancelable && e.pointerType === 'mouse') e.preventDefault();
         // 右拖 → 卡片跟随手指右移（旋转角减小）
         rotation = dragStartRotation - (e.clientX - dragStartX) * DRAG_SENS;
         instantV = -dx * DRAG_SENS;
@@ -161,6 +194,7 @@
     function endDrag() {
         if (!dragging) return;
         dragging = false;
+        dragAxis = null;
         stage.classList.remove('dragging');
         if (!reduceMotion && Math.abs(instantV) >= MIN_VEL) {
             velocity = instantV;

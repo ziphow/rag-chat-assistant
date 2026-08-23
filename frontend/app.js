@@ -12,6 +12,12 @@
 // ==================== 初始化 ====================
 
 window.addEventListener('DOMContentLoaded', () => {
+    // 移动端默认收起侧边栏，避免遮挡聊天画面（窄屏判定，与 CSS 900px 断点一致）
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && window.matchMedia('(max-width: 900px)').matches) {
+        sidebar.classList.add('collapsed');
+    }
+
     // 注册粘贴事件 — 输入框粘贴图片/文件
     const messageInput = document.getElementById('message-input');
     if (messageInput) {
