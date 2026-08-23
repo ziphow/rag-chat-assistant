@@ -207,3 +207,30 @@ async function logout() {
     showLoginPage();
     showToast('已退出登录', 'info');
 }
+
+// ==================== 真机键盘稳定 ====================
+// 移动端键盘弹出/收起会改变 visualViewport 并可能把页面误跳到别处。
+// 这里在视口变化后把当前聚焦的登录/注册输入框滚回可视区，抵消误跳。
+(function () {
+    var vv = window.visualViewport;
+    var isCoarse = window.matchMedia('(pointer: coarse)').matches;
+    if (!vv || !isCoarse) return;
+
+    var loginForm = document.getElementById('login-form');
+    var registerForm = document.getElementById('register-form');
+
+    var recenter = function () {
+        var el = document.activeElement;
+        if (!el) return;
+        var tag = el.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA') return;
+        // 仅处理登录/注册表单内的输入框
+        if (!(loginForm && loginForm.contains(el)) && !(registerForm && registerForm.contains(el))) return;
+        clearTimeout(recenter._t);
+        recenter._t = setTimeout(function () {
+            try { el.scrollIntoView({ block: 'center', behavior: 'auto' }); } catch (e) { /* ignore */ }
+        }, 60);
+    };
+
+    vv.addEventListener('resize', recenter);
+})();

@@ -168,23 +168,20 @@
                 return; // 位移太小，不锁定，等待更大移动
             }
             // 锁定方向：横向位移 >= 纵向位移 → 旋转；否则 → 放弃，交给页面滚动
+            //（页面滚动会经下方 scroll 兜底同步驱动旋转，故纵向滑动既不锁滚动也能转）
             dragAxis = (Math.abs(totalDX) >= Math.abs(totalDY)) ? 'h' : 'v';
-            if (dragAxis === 'h') {
-                // 进入旋转拖拽
-                stage.classList.add('dragging');
-            } else {
-                // 纵向滚动：彻底退出拖拽，不再接管本次指针
+            if (dragAxis === 'v') {
                 dragging = false;
                 return;
             }
+            stage.classList.add('dragging');
         }
 
         // 已锁定为横向旋转：跟手转动
         var dx = e.clientX - lastDragX;
         dragMoved += Math.abs(dx);
-        // 鼠标拖拽时阻止选中文本（触屏交给 CSS touch-action，不干预滚动链）
+        // 鼠标拖拽时阻止选中文本（触屏不 preventDefault，保持滚动链可用）
         if (e.cancelable && e.pointerType === 'mouse') e.preventDefault();
-        // 右拖 → 卡片跟随手指右移（旋转角减小）
         rotation = dragStartRotation - (e.clientX - dragStartX) * DRAG_SENS;
         instantV = -dx * DRAG_SENS;
         lastDragX = e.clientX;
@@ -206,6 +203,49 @@
     // 安全兜底：若指针在 stage 之外松开（拖出边界），也能正确结束拖拽
     document.addEventListener('pointerup', endDrag);
     document.addEventListener('pointercancel', endDrag);
+
+    // ===== 触屏兜底：页面上下滚动同步驱动旋转 =====
+    // 真机上在画廊区上/下滑会触发页面原生滚动（不锁死滚动）；这里在画廊露出视口时，
+    // 把滚动位移映射为旋转，达成"既滚动又能旋转"。仅触屏启用，避免桌面滚轮双倍叠加。
+    if (window.matchMedia('(pointer: coarse)').matches) {
+        var lastScroll = loginPage.scrollTop;
+        loginPage.addEventListener('scroll', function () {
+            var ds = loginPage.scrollTop - lastScroll;
+            lastScroll = loginPage.scrollTop;
+            if (!ds) return;
+            var rect = gallerySection.getBoundingClientRect();
+            var vh = window.innerHeight || document.documentElement.clientHeight;
+            if (rect.bottom <= 0 || rect.top >= vh) return; // 画廊不在可视区内则不响应
+            spin(ds * WHEEL_SENS);
+        }, { passive: true });
+
+        // 页面滚动到边界（最底 / 最顶）后，继续往下 / 往上划时页面已无法再滚，
+        // 此时把纵向位移直接映射为旋转，保证到底后下拉、到顶后上拉仍能控制画廊。
+        var TOUCH_V_SENS = 0.45;
+        var lastTouchY = null;
+        gallerySection.addEventListener('touchstart', function (e) {
+            var t0 = e.changedTouches[0];
+            lastTouchY = t0 ? t0.clientY : null;
+        }, { passive: true });
+
+        gallerySection.addEventListener('touchmove', function (e) {
+            var t0 = e.changedTouches[0];
+            if (!t0) return;
+            var dy = t0.clientY - (lastTouchY !== null ? lastTouchY : t0.clientY);
+            lastTouchY = t0.clientY;
+            if (!dy) return;
+            var maxScroll = loginPage.scrollHeight - loginPage.clientHeight;
+            var atBottom = maxScroll <= loginPage.scrollTop + 1;
+            var atTop = loginPage.scrollTop <= 0;
+            // 仅当页面无法再沿手势方向滚动时才用位移旋转，避免与页面滚动 / scroll 兜底叠加
+            if (!((dy > 0 && atBottom) || (dy < 0 && atTop))) return;
+            var rect = gallerySection.getBoundingClientRect();
+            var vh = window.innerHeight || document.documentElement.clientHeight;
+            if (rect.bottom <= 0 || rect.top >= vh) return;
+            rotation += dy * TOUCH_V_SENS;
+            applyTransform();
+        }, { passive: true });
+    }
 
     applyTransform();
 

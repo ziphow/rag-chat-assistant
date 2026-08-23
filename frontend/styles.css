@@ -4498,8 +4498,10 @@ html, body {
     }
 }
 
-/* 触屏拖拽时不破坏纵向滚动：仅当明确横向滑动时才接管，交给 CSS touch-action */
+/* 触屏：允许纵向原生滚动（绝不锁死页面），横向手势交给 JS 驱动旋转；
+   上下滑通过监听页面滚动带动旋转（见 gallery.js） */
 @media (pointer: coarse) {
+    .lp-gallery,
     .gallery-stage {
         touch-action: pan-y;
     }
@@ -4509,11 +4511,11 @@ html, body {
     .lp-bg-layer {
         animation: none;
     }
-    /* 登录卡去掉 backdrop-filter（改用更实的底色），消除键入时的高频闪烁 */
+    /* 登录卡去掉 backdrop-filter（改用更通透的半透明底色），消除键入时的高频闪烁 */
     .lp-auth-card {
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
-        background: rgba(10, 12, 20, 0.72);
+        background: rgba(10, 12, 20, 0.42);
     }
     /* 标题流光动画静止为静态渐变，减少键入过程中的合成刷新 */
     .lp-auth-title {
