@@ -1,312 +1,168 @@
-# 🧠 知源 AI — AI 智能对话助手
+# 知源 AI — 智能知识助手
 
-> 一个用于 **学习实践 FastAPI、LangChain 与 RAG** 的个人全栈项目。
->
-> 通过 AI 聊天助手的形式，将「用户认证、多轮对话记忆、SSE 流式回复、图片 / 文件多模态分析、知识库 RAG 检索」等能力串成一条完整链路。
->
-> **本人的学习重点在后端**（FastAPI 异步开发、LangChain 智能体编排、LangGraph 记忆、Chroma 向量检索）；前端界面与接口文档主要由 AI 辅助生成并持续美化，作为学习量产物的"可视化载体"。
+> 一个围绕**知识库问答**构建的 RAG（检索增强生成）对话应用，也能看图、解析文档、联网搜索。
 
----
+「知源 AI」基于 **FastAPI + LangChain** 实现，前端是原生 HTML/CSS/JS 的单页应用（长滚动落地页 + 聊天工作台），由 **Nginx** 托管并与后端**同源反代**部署。项目包含功能完整的登录注册、多轮对话（SSE 流式 + 思考过程）、知识库向量检索、图片/文件上传与 AI 理解，以及一个可交互的 3D 画廊落地页。
 
-## 🧭 项目学习历程
-
-本项目遵循一套清晰的开发流程，见证了一个粗糙原型逐步演进为高完成度产品的过程：
-
-```
-① AI 生成简洁前端 + 接口文档
-         │
-         ▼
-② 完成基础功能（认证 / 对话 / 消息）
-         │
-         ▼
-③ 新增 RAG 知识库模块
-         │
-         ▼
-④ 利用 AI 能力大幅美化前端界面
-```
-
-| 阶段 | 内容 | 成果 |
-|:----:|------|------|
-| **① 快速起步** | 用 AI 生成一版简洁可用的前端页面，并配套接口文档作为联调契约 | 纯 HTML / CSS / JS 页面 + `详细接口文档.md` |
-| **② 基础功能** | 完成 JWT 认证、对话 CRUD、消息发送、文件上传等核心后端 | 可注册登录并完成多轮对话 |
-| **③ RAG 模块** | 文档解析、向量化、Chroma 存储、检索注入，实现知识库问答 | 上传文档后按知识库精准回答 |
-| **④ 界面美化** | 借助 AI 对前端进行大幅美学升级（玻璃拟态、艺术背景、GSAP 动效、KaTeX 渲染） | 高完成度的落地页与聊天应用 |
-
-> 前端代码并非个人亲写，而是学习后端的"副产品"；真正投入精力的是 **FastAPI 后端** 与 **LangChain / RAG 流程** 的设计与实现。
-
----
-
-## 📸 界面预览
-
-<div align="center">
-
-**落地页**（品牌入口 · 「让 AI 成为你的智能对话伙伴」）
-
-<img src="docs/screenshots/landing-page.png" alt="落地页预览" width="700"/>
-
-**登录页**（水墨山水 · 玻璃拟态表单 · 「从这里开始」）
-
-<img src="docs/screenshots/login-page.png" alt="登录页预览" width="700"/>
-
-</div>
-
-> 以上界面由 AI 辅助设计生成（背景素材仅供个人学习使用），前端随后经过多轮迭代美化形成当前效果。
+- 版本：**v1.2.0** · 许可：[MIT](LICENSE) · 部署：Docker Compose + GitHub Actions
+- 截图：[落地页](docs/screenshots/landing-page.png) · [登录页](docs/screenshots/login-page.png)
 
 ---
 
 ## ✨ 功能特性
 
-| 功能 | 说明 | 状态 |
-|------|------|:----:|
-| 🔐 用户认证 | JWT 登录 / 注册，Token 黑名单退出机制 | ✅ |
-| 💬 多轮对话 | 基于 LangGraph Checkpointer 的会话记忆，支持自动摘要 | ✅ |
-| ⚡ 流式回复 | SSE 实时推送，打字机效果，零延迟体验 | ✅ |
-| 💭 思考过程 | qwen3.7-plus 思考模式下展示 AI 思考过程，默认展开、开始回答后自动折叠；思考内容持久化存储，历史可回看 | ✅ |
-| 🖼️ 图片分析 | 上传图片自动转 base64 传给多模态模型分析 | ✅ |
-| 📄 文件分析 | 支持 PDF / Word / TXT / CSV，自动转文本供 AI 分析 | ✅ |
-| 🌐 网页搜索 | 内置 Tavily 搜索与时间查询工具 | ✅ |
-| 📚 知识库 RAG | 上传文档构建向量知识库，对话时指定知识库获取精准回答 | ✅ |
-| 📑 AI 自动标题 | 首轮对话后自动生成长对话标题 | ✅ |
-| 🗂️ 文件历史 | 按对话查看与下载发送过的图片 / 文件 | ✅ |
-| 📝 Markdown 渲染 | 支持代码块、表格、列表、KaTeX 公式等格式渲染 | ✅ |
-
-> ✅ = 已完成
+- **智能多轮对话**：基于大模型，**SSE 流式输出** + **思考过程展示**（think），可折叠
+- **知识库问答（RAG）**：上传文档入库，**Chroma 向量检索**精准回答
+- **图片分析 / 文件解析**：上传图片、PDF、Word、Excel 等，AI 直接理解内容
+- **图片与文件上传**：支持选择 / 粘贴 / 拖拽，**本地磁盘存储**，单文件 ≤ 10MB
+- **联网搜索**：Agent 内置 **Tavily** 网页搜索工具
+- **模型额度自动切换**：优先列表用尽后固化切换到下一可用模型
+- **多用户体系**：注册 / 登录 / **JWT 鉴权** / 动态头像
+- **对话管理**：新建 / 重命名 / 删除 / 清空对话，按时间排序
+- **3D 画廊落地页**：滚动 / 滑动可旋转的圆柱画廊，内置 AI 生成壁纸
+- **「关于」弹窗**：登录页与聊天页均可打开，含开源仓库、版本、技术栈、免责声明与侵权联系
 
 ---
 
-## 🛠️ 技术栈
+## 🚀 技术栈
 
-### 后端（学习重点）
-
-| 技术 | 用途 |
-|------|------|
-| [FastAPI](https://fastapi.tiangolo.com/) | 异步 Web 框架，SSE 流式响应 |
-| [LangChain](https://www.langchain.com/) | LLM 应用框架与智能体编排 |
-| [LangGraph](https://langchain-ai.github.io/langgraph/) | 对话状态图、Checkpointer 会话记忆、消息摘要中间件 |
-| [SQLModel](https://sqlmodel.tiangolo.com/) | ORM 与数据库操作（基于 SQLAlchemy async） |
-| [ChromaDB](https://www.trychroma.com/) | 向量数据库（RAG），embedding 由 `langchain-chroma` 提供 |
-| MySQL (`aiomysql`) | 业务数据库（可切换 SQLite） |
-| 通义千问 | 对话 / 摘要 / 标题 / 向量嵌入模型（DashScope OpenAI 兼容协议） |
-
-### 前端（AI 辅助生成与美化）
-
-| 技术 | 用途 |
-|------|------|
-| HTML / CSS / JavaScript | 原生实现，无框架依赖 |
-| GSAP | 页面与组件动画 |
-| KaTeX | 数学公式渲染 |
-| SSE | 流式接收 AI 回复 |
-
----
-
-## 🧠 模型与智能体说明
-
-对话由 LangGraph 编排的 **Agent** 驱动，核心模型为 `qwen3.7-plus`（通过 DashScope 的 OpenAI 兼容接口调用）：
-
-- **qwen3.7-plus** — 主对话模型（启用思考 `enable_thinking=true`）
-- **qwen3.7-max** — 摘要中间件与标题生成模型
-- **qwen3.7-text-embedding** — RAG 文档向量化嵌入模型
-- **内置工具**：`get_time`（时间查询）、`TavilySearch`（网页搜索）
-
-RAG 流程：上传文档 → 后台解析（PDF / DOCX / TXT / MD / CSV）→ 递归分块 → DashScope 向量化 → 存入 Chroma（每个知识库一个 collection）→ 对话时按相似度检索 Top-K 片段注入上下文。
+| 层 | 技术 |
+|:--|:--|
+| **前端** | 原生 HTML / CSS / JavaScript · GSAP 动画 · KaTeX 公式渲染 · 3D 画廊 · 移动端响应式适配 |
+| **后端** | FastAPI · LangChain 1.3 · LangGraph · Chroma 向量库 · DashScope（通义千问）· Tavily 搜索 · SSE 流式 · JWT |
+| **数据库** | MySQL 8（SQLModel / SQLAlchemy 异步 ORM）· 上传文件与向量库存本地磁盘 |
+| **部署** | Docker / Docker Compose · Nginx 反向代理 + 静态托管 · GitHub Actions 智能 CI/CD |
 
 ---
 
 ## 📁 项目结构
 
 ```
-rag-chat-assistant/
-├── backend/                          # ← 学习重点：FastAPI + LangChain + RAG
-│   ├── app/
-│   │   ├── ai/
-│   │   │   ├── agent.py              🤖 智能体创建、LangGraph 记忆、摘要中间件
-│   │   │   └── title_generator.py    📝 AI 对话标题生成
-│   │   ├── rag/
-│   │   │   ├── document_loader.py    📄 文档加载与分块
-│   │   │   ├── vector_store.py       📦 Chroma 向量存储管理
-│   │   │   └── rag.py                🔍 知识库检索
-│   │   ├── routers/
-│   │   │   ├── auth.py               🔐 登录、注册、退出、当前用户
-│   │   │   ├── chats.py              💬 对话 CRUD、清空、文件历史
-│   │   │   ├── messages.py           📨 SSE 流式发送消息
-│   │   │   ├── files.py              📁 文件上传
-│   │   │   └── knowledge_bases.py    📚 知识库 CRUD、文档上传与删除
-│   │   ├── services/
-│   │   │   ├── auth_service.py       🎟️ JWT 生成与验证
-│   │   │   ├── security.py           🔒 bcrypt 密码哈希
-│   │   │   ├── sse_stream.py         ⚡ SSE 流式生成器
-│   │   │   └── file_utils.py         🖼️ 图片 base64、文件转文本、附件清理
-│   │   ├── Schemas/model.py          📋 Pydantic 请求模型（UserMessage 等）
-│   │   ├── config.py                 ⚙️ 环境变量配置
-│   │   ├── database.py               🗄️ SQLModel 模型与会话管理
-│   │   ├── dependencies.py           🔗 依赖注入（当前用户、Token 黑名单）
-│   │   └── main.py                   🚀 FastAPI 应用入口（CORS、静态目录）
-│   ├── .env.example                  📋 环境变量模板
-│   ├── pyproject.toml                📦 项目元数据与依赖（PEP 621）
-│   └── requirements.txt              📦 pip 依赖清单
-├── frontend/                         # AI 辅助生成与美化的界面
-│   ├── index.html                    🌐 页面结构（落地页 + 认证 + 聊天应用）
-│   ├── styles.css                    🎨 样式
-│   ├── app.js                        ⚡ 应用初始化与事件绑定
-│   ├── js/                           # 认证、对话、SSE、知识库、文件、主题等模块
-│   ├── assets/                       🖼️ 静态素材（背景、头像、特性图）
-│   └── 详细接口文档.md                📖 前后端 API 对接文档
-├── docs/
-│   ├── screenshots/                  📸 界面预览截图
-│   └── *.md                          📚 学习笔记（FastAPI / LangChain / RAG / SQLModel）
-└── README.md
+frontend/                 前端静态资源（HTML/CSS/JS）与 Nginx 配置
+  ├─ nginx.conf           静态托管 + 后端 API /uploads 反代
+  ├─ index.html           单页：登录页 + 聊天工作台
+  └─ js/                  业务模块（chat/auth/knowledge-base/file-upload/gallery …）
+backend/app               后端 FastAPI 主应用
+  ├─ routers/             路由入口（auth/chats/messages/files/knowledge_bases）
+  ├─ ai/                  LLM 额度切换、Agent、思考补丁、标题生成
+  ├─ rag/                 文档加载、Chroma 向量库、RAG 检索链路
+  ├─ services/            鉴权、SSE 流式、文件工具
+  ├─ Schemas/             请求/响应模型
+  ├─ database.py          数据模型（User/Chat/Message/Knowledge）与异步引擎
+  └─ config.py            集中环境变量配置
+backend/.env.example      后端环境变量模板
+compose.yaml              服务编排（db / backend / frontend）
+docs/                     学习笔记、接口文档、截图
+tools/preview-proxy.js    本地真机预览代理（开发工具）
 ```
 
 ---
 
 ## 🚀 快速开始
 
-### 📋 环境要求
-
-- **Python ≥ 3.14**
-- 包管理工具：[uv](https://github.com/astral-sh/uv)（推荐）或 pip
-
-### 🔧 后端启动
-
-**1. 进入后端目录并安装依赖**
-
+### 1. 配置环境变量
 ```bash
-cd backend
-uv venv
-uv pip install -r requirements.txt
-# 或用 pip： pip install -e .
+cp backend/.env.example backend/.env
+# 编辑 backend/.env：填入模型 API Key、JWT SECRET_KEY 等
 ```
 
-**2. 配置环境变量**
-
+### 2. 启动全部服务
 ```bash
-cp .env.example .env
-# 编辑 .env，填入你的 API 密钥
+docker compose up -d --build
 ```
+- 访问 `http://localhost`（或服务器公网 IP）即进入「知源 AI」
+- `compose.yaml` 已自动注入 `DATABASE_URL`（指向容器内 MySQL：`rag_chat` 库）与 `BACKEND_BASE_URL=""`（前后端同源，文件走相对路径）
 
-<details>
-<summary>📝 查看 .env 需要填什么</summary>
-
-| 变量名 | 说明 | 必填 |
-|--------|------|:----:|
-| `DASHSCOPE_API_KEY` | 阿里云通义千问 API 密钥 | ✅ |
-| `DASHSCOPE_BASE_URL` | DashScope OpenAI 兼容 API 地址 | ✅ |
-| `DASHSCOPE_WORKSPACE_BASE_URL` | 工作空间向量模型接口地址 | ✅* |
-| `TAVILY_API_KEY` | Tavily 搜索 API 密钥 | ✅ |
-| `DATABASE_URL` | MySQL 连接串（如 `mysql+aiomysql://user:pass@localhost:3306/dbname`） | ✅ |
-| `SECRET_KEY` | JWT 签名密钥 | ✅ |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Token 有效期（分钟，默认 1440） | 否 |
-
-> *向量嵌入若使用默认通义千问 `text-embedding` 系列模型可不需要；由 `DASHSCOPE_BASE_URL` 提供。
-
-</details>
-
-**3. 启动服务**
-
-```bash
-uv run uvicorn app.main:app --reload
-```
-
-| 服务 | 地址 |
-|------|------|
-| 后端 API | http://127.0.0.1:8000 |
-| 交互式文档（Swagger） | http://127.0.0.1:8000/docs |
-
-> 数据库 `create_db_and_tables` 默认在 `main.py` 中被注释，首次启动前可按需启用，或自行建表。
-
-### 🌐 前端启动
-
-前端是纯静态文件，用本地 HTTP 服务器启动以获得最佳体验（避免 CORS 问题）：
-
-```bash
-cd frontend
-python -m http.server 5500
-```
-
-然后访问 http://localhost:5500 。（或在 VS Code 中右键 `index.html` → Open with Live Server）
+### 3. 账号
+在登录页自行注册新账号即可使用（JWT 鉴权，24h 有效）。
 
 ---
 
-## 📖 API 接口概览
+## 🔧 环境变量说明
 
-> 完整接口文档见 [frontend/详细接口文档.md](frontend/详细接口文档.md)
+> 后端读取 `backend/.env`；MySQL 相关变量可由根目录 `.env` 或 shell 环境覆盖。
 
-### 认证模块
+| 变量 | 说明 |
+|:--|:--|
+| `DASHSCOPE_API_KEY` | 阿里云通义千问 API Key（对话 / 多模态） |
+| `DASHSCOPE_BASE_URL` | 千问兼容模式地址（默认 `…/compatible-mode/v1`） |
+| `DASHSCOPE_WORKSPACE_BASE_URL` | 向量模型工作空间地址 |
+| `DEEPSEEK_API_KEY` | 深度求索 API Key（可选） |
+| `TAVILY_API_KEY` | Tavily 网页搜索 Key（Agent 工具） |
+| `DATABASE_URL` | MySQL 连接串（compose 会自动覆盖指向 `db` 服务） |
+| `SECRET_KEY` | JWT 密钥，**生产务必改为随机长字符串** |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Token 有效期（默认 1440 = 24h） |
+| `BACKEND_BASE_URL` | 文件访问基础地址；部署同源时留空 `""` |
+| `LLM_MODEL_PRIORITY` | 对话模型优先列表（逗号分隔，额度用尽自动切换） |
+| `TITLE_MODEL_PRIORITY` | 标题生成模型优先列表 |
+| `EMBEDDING_MODEL` | 文本嵌入模型（默认 qwen 系） |
+| `MYSQL_ROOT_PASSWORD` / `MYSQL_DATABASE` | 根 `.env` 中 MySQL 密码与库名 |
 
-| 方法 | 路径 | 说明 | 认证 |
-|:----:|------|------|:----:|
-| POST | `/auth/register` | 用户注册 | 否 |
-| POST | `/auth/login` | 用户登录 | 否 |
-| GET | `/auth/me` | 获取当前用户 | 是 |
-| POST | `/auth/logout` | 退出登录 | 是 |
-
-### 对话与消息模块
-
-| 方法 | 路径 | 说明 |
-|:----:|------|------|
-| GET | `/chats` | 获取对话列表 |
-| POST | `/chats` | 创建对话 |
-| GET | `/chats/{chat_id}` | 获取对话消息 |
-| PUT | `/chats/{chat_id}` | 修改标题 |
-| GET | `/chats/{chat_id}/create_title` | AI 自动生成标题 |
-| DELETE | `/chats/{chat_id}` | 删除对话 |
-| DELETE | `/chats/{chat_id}/messages` | 清空对话消息 |
-| POST | `/message/send` | 发送消息（SSE 流式） |
-
-### 文件模块
-
-| 方法 | 路径 | 说明 |
-|:----:|------|------|
-| POST | `/files/upload` | 上传文件 |
-| GET | `/files/sent` | 所有对话发送的文件 |
-| GET | `/chats/{chat_id}/files` | 单个对话的文件 |
-
-### 知识库模块（RAG）
-
-| 方法 | 路径 | 说明 |
-|:----:|------|------|
-| POST | `/knowledge-bases` | 创建知识库 |
-| GET | `/knowledge-bases` | 获取知识库列表 |
-| DELETE | `/knowledge-bases/{kb_id}` | 删除知识库 |
-| POST | `/knowledge-bases/{kb_id}/documents` | 上传文档（异步处理） |
-| GET | `/knowledge-bases/{kb_id}/documents` | 获取文档列表 |
-| DELETE | `/knowledge-bases/{kb_id}/documents/{doc_id}` | 删除文档 |
+> 向量嵌入使用 DashScope（`LangChain` 的 `DashScopeEmbeddings`），向量库为 Chroma，持久化于 `data/chroma_db`。
 
 ---
 
-## 🔑 环境变量说明
+## 🔌 API 概览
 
-| 变量名 | 说明 | 获取方式 |
-|--------|------|---------|
-| `DASHSCOPE_API_KEY` | 阿里云通义千问 API 密钥 | [DashScope 控制台](https://dashscope.console.aliyun.com/) |
-| `DASHSCOPE_BASE_URL` | DashScope OpenAI 兼容 API 地址 | 固定值，见 `.env.example` |
-| `DASHSCOPE_WORKSPACE_BASE_URL` | 工作空间（百炼）向量模型接口 | 控制台获取 |
-| `TAVILY_API_KEY` | Tavily 搜索 API 密钥 | [Tavily 官网](https://tavily.com/) |
-| `DATABASE_URL` | 数据库连接字符串 | MySQL 或 SQLite，见 `.env.example` |
-| `SECRET_KEY` | JWT 签名密钥 | 自行生成随机字符串 |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | Token 有效期（分钟） | 可留默认 |
+| 模块 | 端点 |
+|:--|:--|
+| 认证 | `POST /auth/login` · `POST /auth/register` · `GET /auth/me` · `POST /auth/logout` |
+| 对话 | `GET/POST /chats` · `GET/PUT/DELETE /chats/{chat_id}` · `DELETE /chats/{chat_id}/messages` · `GET /chats/{chat_id}/create_title` · `GET /chats/{chat_id}/files` · `GET /files/sent` |
+| 消息 | `POST /message/send`（SSE 流式，支持 images/files） |
+| 文件 | `POST /files/upload` |
+| 知识库 | `POST/GET /knowledge-bases` · `POST/GET /knowledge-bases/{kb_id}/documents` · `DELETE /knowledge-bases/{kb_id}/documents/{doc_id}` · `DELETE /knowledge-bases/{kb_id}` |
 
----
-
-## 📚 学习笔记
-
-`docs/` 目录存放了学习过程中沉淀的技术笔记：
-
-- `fastapi_tutorial.md` — FastAPI 异步开发
-- `langchain_objects_detailed.md` / `langchain_objects_tree_reference.md` / `langchain_v1_api_guide.md` — LangChain 对象与 API
-- `RAG教程.md` — RAG 检索增强生成
-- `sqlmodel_tutorial.md` / `sqlmodel_api_reference.md` — SQLModel 数据建模
+> 完整请求/响应字段见 [docs/详细接口文档.md](docs/详细接口文档.md)。
 
 ---
 
-## 📄 License
+## 💻 本地开发（不依赖 Docker）
 
-本项目采用 MIT 协议开源，可自由使用、修改和分发。
+前端 `config.js` 会自动判断后端地址：
+- 通过 `file://` 直接打开，或访问 `localhost`/`127.0.0.1` → 指向本地后端 `http://127.0.0.1:8000`
+- 其他域名访问 → 走**同源相对路径**（生产部署，经 nginx 反代）
+
+典型流程：本地起后端 `uvicorn app.main:app --reload --port 8000`，用任意静态服务器打开 `frontend` 即可。
+
+**真机预览**：开发 `tools/preview-proxy.js` 可将前端静态资源（本地最新代码）+ 线上后端 API 一起代理到一个局域网地址，手机连同一 Wi-Fi 即实时实测，无需每次部署。
 
 ---
 
-## 🙋 说明
+## 📦 上传与文件存储
 
-**这是一个个人学习项目**，用于实践 FastAPI + LangChain + RAG 全栈开发。代码与文档会随学习进度持续更新。
+- 上传文件存于本地磁盘 `./backend/uploads`（compose 中已挂载持久化卷）
+- **单文件 ≤ 10MB**，类型为白名单（图片 / 常用文档 / 压缩包），文件名用 UUID 防路径穿越
+- 删除对话 / 知识库文档会**同步清理磁盘文件**；应用启动时自动清理**未被任何消息引用且超 24h** 的孤儿文件，避免小磁盘被占满
 
-> 项目所有背景素材仅供个人学习使用，具体版权归属见各素材来源。
+---
+
+## ⚙️ 部署与 CI/CD
+
+- 服务组成：`db`(MySQL) + `backend`(FastAPI, 仅内部) + `frontend`(Nginx, 暴露 80)
+- **GitHub Actions**（`.github/workflows/deploy.yml`）：push 到 `main` 触发，智能分析本次改动：
+  - 改动 `backend/` → 重建 `backend`
+  - 改动 `frontend/` → 重建 `frontend`
+  - 改动 `compose.yaml` / `Dockerfile` → 重建全部
+  - 仅 `.md` / `docs` → 跳过部署
+- 服务器前置：开放安全组端口 80（HTTP）与 22（SSH）；配置 SSH Deploy Key 与仓库 `Secrets`（`SERVER_SSH_KEY` / `SERVER_HOST` / `SERVER_USER` / `SERVER_PORT`）
+
+---
+
+## 🖼️ 素材与版权
+
+- 登录页画廊壁纸素材来源：**哲风壁纸 · 样片日记 · 个人学习用途**
+- 如页面内容或素材涉及您的版权、需要删除，请邮件至 **lihao.dev@outlook.com**，核实后及时处理。
+
+## 📄 免责声明
+
+本项目仅用于**个人学习与交流**，不作为生产级服务使用。AI 生成内容仅供参考，请自行核实重要信息；因使用产生的任何后果，本项目不承担相关责任。
+
+---
+
+## 🤝 贡献
+
+欢迎提交 Issue / Pull Request。主要分支：`main`。
+
+## 📧 联系
+
+- 邮箱：lihao.dev@outlook.com

@@ -4528,3 +4528,94 @@ html, body {
 }
 .message-thinking.collapsed .thinking-body { display: none; }
 .message-thinking.collapsed .thinking-chevron { transform: rotate(-90deg); }
+
+/* ============ 页脚 GitHub 链接 ============ */
+.lp-footer-github {
+    margin: 0 0 6px;
+}
+.lp-footer-github a {
+    color: #a78bfa;
+    text-decoration: none;
+    font-size: 0.92rem;
+    transition: color .2s;
+}
+.lp-footer-github a:hover {
+    color: #c4b5fd;
+    text-decoration: underline;
+}
+
+/* ============ 关于「知源 AI」弹窗 ============ */
+.about-body {
+    padding: 20px 22px;
+}
+.about-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 0 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.about-logo {
+    border-radius: 12px;
+    border: 1px solid rgba(167,139,250,0.35);
+    flex-shrink: 0;
+}
+.about-brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.about-name {
+    font-weight: 600;
+    font-size: 1.02rem;
+}
+.about-slogan {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+.about-section-title {
+    margin: 18px 0 8px;
+    font-size: 0.8rem;
+    letter-spacing: .06em;
+    color: #a78bfa;
+    font-weight: 600;
+}
+.about-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 9px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+.about-label {
+    color: #94a3b8;
+    flex-shrink: 0;
+    width: 74px;
+}
+.about-value {
+    color: #e2e8f0;
+    word-break: break-word;
+}
+.about-value a {
+    color: #a78bfa;
+    text-decoration: none;
+}
+.about-value a:hover {
+    text-decoration: underline;
+}
+.about-note {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(167,139,250,0.08);
+    border: 1px solid rgba(167,139,250,0.15);
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+.about-note-title {
+    display: block;
+    font-weight: 600;
+    color: #a78bfa;
+    margin-bottom: 4px;
+}
