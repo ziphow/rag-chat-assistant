@@ -1,8 +1,13 @@
 from typing import Optional, List
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from enum import Enum
 from sqlmodel import SQLModel, Field, Relationship, JSON
 from sqlalchemy import Text, func, Column, DateTime
+
+# 统一使用北京时区生成时间，避免返回无时区的 UTC 造成前端显示偏差
+def _bj_now() -> datetime:
+    return datetime.now(ZoneInfo("Asia/Shanghai"))
 
 # ---------- 用户表 ----------
 class User(SQLModel, table=True):
@@ -14,7 +19,7 @@ class User(SQLModel, table=True):
     password_hash: str = Field(nullable=False)
     avatar: Optional[str] = Field(default=None, max_length=500)
     created_at: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=_bj_now,
         sa_column=Column(DateTime, server_default=func.now())
     )
 
@@ -30,12 +35,12 @@ class Chat(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.id", nullable=False)  # 外键，非空
     title: str = Field(max_length=200, nullable=False)
     created_at: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=_bj_now,
         sa_column=Column(DateTime, server_default=func.now())
     )
     updated_at: datetime = Field(
-        default_factory=datetime.now,
-        sa_column=Column(DateTime, server_default=func.now(), onupdate=func.now())
+        default_factory=_bj_now,
+        sa_column=Column(DateTime, server_default=func.now(), onupdate=_bj_now)
     )
 
     # 关系
@@ -55,7 +60,7 @@ class Message(SQLModel, table=True):
     images: Optional[list] = Field(default=None, sa_type=JSON)  # JSON 字段，可为空
     files: Optional[list] = Field(default=None, sa_type=JSON)   # JSON 字段，可为空
     created_at: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=_bj_now,
         sa_column=Column(DateTime, server_default=func.now())
     )
 
@@ -72,12 +77,12 @@ class KnowledgeBases(SQLModel, table=True):
     name: str = Field(..., nullable=False,max_length=100,description="知识库名称")
     description:str=Field(default="暂无描述",max_length=1000,nullable=False,description="知识库描述")
     created_at: datetime = Field(
-        default_factory=datetime.now,description="创建时间",
+        default_factory=_bj_now,description="创建时间",
         sa_column=Column(DateTime, server_default=func.now())
     )
     updated_at: datetime = Field(
-        default_factory=datetime.now,description="修改时间",
-        sa_column=Column(DateTime, server_default=func.now(), onupdate=func.now())
+        default_factory=_bj_now,description="修改时间",
+        sa_column=Column(DateTime, server_default=func.now(), onupdate=_bj_now)
     )
 
 # ------------------------ 知识库文档表 --------------------
@@ -97,7 +102,7 @@ class KnowledgeDocuments(SQLModel, table=True):
     status: DocStatus = Field(default=DocStatus.processing, description="处理状态")
     chunk_count:int=Field(...,description="分块数量")
     created_at: datetime = Field(
-        default_factory=datetime.now, description="创建时间",
+        default_factory=_bj_now, description="创建时间",
         sa_column=Column(DateTime, server_default=func.now())
     )
 

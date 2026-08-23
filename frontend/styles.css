@@ -899,12 +899,9 @@ body {
 }
 
 .chat-history-item .chat-actions {
-    display: none;
-    gap: 4px;
-}
-
-.chat-history-item:hover .chat-actions {
     display: flex;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
 .chat-action-btn {
@@ -2027,12 +2024,9 @@ body {
 }
 
 .kb-item .kb-actions {
-    display: none;
-    gap: 4px;
-}
-
-.kb-item:hover .kb-actions {
     display: flex;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
 .kb-action-btn {

@@ -37,7 +37,13 @@ function formatFileSize(bytes) {
  * 格式化时间（ISO 字符串 → "刚刚 / X分钟前 / X小时前 / MM-DD"）
  */
 function formatTime(isoString) {
-    const date = new Date(isoString);
+    if (!isoString) return '';
+    const raw = String(isoString);
+    // FastAPI 返回的 datetime 序列化为"无时区"字符串，实际是服务器生成的 UTC 时间。
+    // 若直接 new Date(raw)，浏览器会按本地时区解析，导致差 8 小时（显示"8小时前"）。
+    // 这里对无时区标记的字符串补上东八区偏移，得到真实本地时刻再做差值。
+    const hasTz = /[Zz]|[+-]\d{2}:?\d{2}\s*$/.test(raw);
+    const date = hasTz ? new Date(raw) : new Date(raw.replace(/\s*$/, '') + '+08:00');
     const now = new Date();
     const diff = now - date;
 

@@ -10,6 +10,45 @@
 
 // ==================== 侧边栏收起/展开 ====================
 
+/** 流式期间是否贴底自动滚动：true = 跟随 AI 输出；用户主动滚动后置为 false，不打断阅读 */
+let stickToBottom = true;
+
+/** 更新贴底状态：仅消息容器距底较近时才允许跟随；不在等待回复时总是恢复贴底 */
+function updateStickState() {
+    const listEl = document.getElementById('message-list');
+    if (!listEl) return;
+    const dist = listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight;
+    if (state.isWaitingResponse) {
+        if (dist > 90) stickToBottom = false;
+    } else {
+        stickToBottom = true;
+    }
+}
+
+// 用 document 级捕获监听，避免 chat.js 加载时 #message-list 尚未存在而漏绑。
+// 只要用户在消息容器上触屏滑动/滚轮/滚动，都即时判定为"离开贴底"，不再自动拉回。
+(function () {
+    const inMsg = (t) => !!(t && t.nodeType === 1 && t.closest && t.closest('#message-list'));
+    document.addEventListener('scroll', (e) => { updateStickState(); }, true);
+    document.addEventListener('touchstart', (e) => {
+        if (inMsg(e.target)) stickToBottom = false;
+    }, { capture: true, passive: true });
+    document.addEventListener('wheel', (e) => {
+        if (inMsg(e.target)) stickToBottom = false;
+    }, { capture: true, passive: true });
+})();
+
+/** 流式更新时滚动：仅在用户仍贴底时跟随 AI 输出；用 auto 定位避免 smooth 平滑动画打断用户上滑 */
+function scrollStreamBottom() {
+    if (!stickToBottom) return;
+    const listEl = document.getElementById('message-list');
+    if (!listEl) return;
+    const prev = listEl.style.scrollBehavior;
+    listEl.style.scrollBehavior = 'auto';
+    listEl.scrollTop = listEl.scrollHeight;
+    listEl.style.scrollBehavior = prev || '';
+}
+
 /** 所有提示语（每次进入新对话随机选 4 条展示） */
 const SUGGESTIONS = [
     { title: '写一首诗', text: '帮我写一首关于春天的诗，要有意境和韵律' },
@@ -215,6 +254,11 @@ async function createNewChat() {
         };
         state.chats.unshift(newChat);
         state.currentChatId = newChat.id;
+        // 每次新建对话默认不使用知识库
+        if (state.currentKbId != null) {
+            state.currentKbId = null;
+            if (window.selectKbForChat) selectKbForChat(null);
+        }
         renderChatHistory();
         renderMessages();
         document.getElementById('current-chat-title').textContent = newChat.title;
@@ -500,6 +544,18 @@ function appendThinkingBlock(msgEl, text) {
     const body = block.querySelector('.thinking-body');
     if (!body) return;
     body.appendChild(document.createTextNode(text));
+    // 思考框有限高（max-height + overflow）。首次超出后保持自动滚底显示最新；
+    // 一旦用户在该框内上滑查看历史，则停止自动跟随，尊重用户阅读。
+    if (body.__follow === undefined) {
+        body.__follow = true;
+        body.addEventListener('scroll', () => {
+            const d = body.scrollHeight - body.scrollTop - body.clientHeight;
+            if (d > 40) body.__follow = false;
+        }, { passive: true });
+        body.addEventListener('touchstart', () => { body.__follow = false; }, { passive: true });
+        body.addEventListener('wheel', () => { body.__follow = false; }, { passive: true });
+    }
+    if (body.__follow) body.scrollTop = body.scrollHeight;
 }
 
 /** 折叠/展开思考区块 */
@@ -662,6 +718,8 @@ async function sendMessage() {
         if (contentType.includes('text/event-stream')) {
             // ===== SSE 流式回复 =====
             hideTypingIndicator();
+            // 刚发送，默认贴底跟随 AI 输出
+            stickToBottom = true;
 
             const aiMessage = {
                 role: 'ai',
@@ -728,7 +786,7 @@ async function sendMessage() {
                                     getThinkingBlock(aiMsgEl);
                                 }
                                 appendThinkingBlock(aiMsgEl, t);
-                                scrollToBottomIfNear();
+                                scrollStreamBottom();
                             }
                         } else if (data.type === 'chunk' || data.type === 'delta') {
                             // 收到第一段正式回答时自动折叠思考过程
@@ -739,7 +797,7 @@ async function sendMessage() {
                             if (!hasContent) hasContent = true;
                             aiMessage.content += data.content || '';
                             updateMessageBubble(aiMsgEl, aiMessage.content);
-                            scrollToBottomIfNear();
+                            scrollStreamBottom();
                         } else if (data.type === 'done' || data.type === 'end') {
                             if (data.content) aiMessage.content = data.content;
                             if (thinkingContent && aiMessage.thinking !== thinkingContent) {
