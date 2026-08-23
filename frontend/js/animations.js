@@ -166,13 +166,18 @@
                 scrollTrigger: { trigger: '.lp-feature-grid', start: 'top 82%', scroller: page },
             });
 
-            // 登录卡片：书本离场后从下方升起（滚动驱动，可随滚动倒退）
-            gsap.fromTo('.lp-auth-card', { autoAlpha: 0, y: 220 }, {
-                autoAlpha: 1,
-                y: 0,
-                ease: 'none',
-                scrollTrigger: { trigger: '.lp-auth-section', start: 'top 96%', end: 'top 34%', scrub: true, scroller: page },
-            });
+            // 登录卡片：书本离场后从下方升起（滚动驱动，可随滚动倒退）。
+            // 触屏端直接稳定显示：避免键盘弹出/收起、键入时因视口变化重新 scrub 造成闪烁与误跳。
+            if (window.matchMedia('(pointer: coarse)').matches) {
+                gsap.set('.lp-auth-card', { autoAlpha: 1, y: 0, clearProps: 'transform' });
+            } else {
+                gsap.fromTo('.lp-auth-card', { autoAlpha: 0, y: 220 }, {
+                    autoAlpha: 1,
+                    y: 0,
+                    ease: 'none',
+                    scrollTrigger: { trigger: '.lp-auth-section', start: 'top 96%', end: 'top 34%', scrub: true, scroller: page },
+                });
+            }
 
             // Hero 背景视差：随滚动缓慢下移
             gsap.to('.lp-hero-bg', {

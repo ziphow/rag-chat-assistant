@@ -49,6 +49,8 @@ body {
     color: #e2e8f0;
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
+    /* 关闭滚动锚定：防止键盘弹出/收起等视口变化时页面被自动重定位到其他区块 */
+    overflow-anchor: none;
 }
 
 /* 顶部导航：完全透明 */
@@ -4500,6 +4502,32 @@ html, body {
 @media (pointer: coarse) {
     .gallery-stage {
         touch-action: pan-y;
+    }
+
+    /* 手机端稳定性适配：键盘弹出/收起、键入时的闪烁与误跳修复 */
+    /* 背景不再持续缩放，避免在磨砂卡片后频繁 repaint 造成闪烁 */
+    .lp-bg-layer {
+        animation: none;
+    }
+    /* 登录卡去掉 backdrop-filter（改用更实的底色），消除键入时的高频闪烁 */
+    .lp-auth-card {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: rgba(10, 12, 20, 0.72);
+    }
+    /* 标题流光动画静止为静态渐变，减少键入过程中的合成刷新 */
+    .lp-auth-title {
+        animation: none;
+    }
+    /* iOS 会对字号 <16px 的输入框自动放大导致页面跳动；登录/注册框改为 16px 规避 */
+    .lp-auth-card .form-group input[type="text"],
+    .lp-auth-card .form-group input[type="email"],
+    .lp-auth-card .form-group input[type="password"] {
+        font-size: 16px;
+    }
+    /* 触屏下平滑滚动可能与键盘自动滚动冲突导致跳动，改回即时定位 */
+    .login-page {
+        scroll-behavior: auto;
     }
 }
 .message-thinking.collapsed .thinking-body { display: none; }
