@@ -79,6 +79,8 @@
     }
 
     function openPicker() {
+        // 旧版模式下禁用头像选择
+        if (typeof isLegacyMode === 'function' && isLegacyMode()) return;
         var picker = document.getElementById('avatar-picker');
         if (!picker) return;
         renderGrid();

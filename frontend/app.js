@@ -12,6 +12,9 @@
 // ==================== 初始化 ====================
 
 window.addEventListener('DOMContentLoaded', () => {
+    // 初始化 UI 模式（必须在 showLoginPage 之前执行）
+    initLegacyMode();
+
     // 移动端默认收起侧边栏，避免遮挡聊天画面（窄屏判定，与 CSS 900px 断点一致）
     const sidebar = document.getElementById('sidebar');
     if (sidebar && window.matchMedia('(max-width: 900px)').matches) {

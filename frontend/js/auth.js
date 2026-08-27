@@ -11,19 +11,25 @@
 // ==================== 页面切换 ====================
 
 function showLoginPage() {
-    document.getElementById('login-page').style.display = 'block';
+    var legacy = isLegacyMode();
+    document.getElementById('login-page').style.display = legacy ? 'none' : 'block';
+    var legacyPage = document.getElementById('legacy-login-page');
+    if (legacyPage) legacyPage.style.display = legacy ? 'flex' : 'none';
     document.getElementById('chat-app').style.display = 'none';
-    if (window.Anim && window.Anim.loginInit) window.Anim.loginInit();
+    if (!legacy && window.Anim && window.Anim.loginInit) window.Anim.loginInit();
 }
 
 function showChatPage() {
     document.getElementById('login-page').style.display = 'none';
+    var legacyPage = document.getElementById('legacy-login-page');
+    if (legacyPage) legacyPage.style.display = 'none';
     document.getElementById('chat-app').style.display = 'flex';
     renderSuggestions();
     if (window.Anim && window.Anim.loginCleanup) window.Anim.loginCleanup();
     requestAnimationFrame(() => {
         if (window.Anim) window.Anim.pageEntrance();
     });
+    if (isLegacyMode()) updateLegacyAvatar();
 }
 
 /** 切换登录 / 注册表单显示 */
@@ -91,6 +97,11 @@ function togglePassword(inputId, btn) {
 function updateUserInfo() {
     if (state.currentUser) {
         document.getElementById('user-name').textContent = state.currentUser.username;
+        // 设置头像首字母（旧版模式 CSS 用）
+        var avatarBtn = document.getElementById('user-avatar');
+        if (avatarBtn) {
+            avatarBtn.setAttribute('data-initial', state.currentUser.username.charAt(0).toUpperCase());
+        }
         // 按用户名读取头像（无则随机分配），由 avatar.js 处理
         if (window.Avatar) window.Avatar.loadForUser(state.currentUser.username);
     }
@@ -98,91 +109,111 @@ function updateUserInfo() {
 
 // ==================== 登录 ====================
 
+/** 通用登录提交处理，prefix 区分新版 ('') 与旧版 ('legacy-') */
+async function handleLoginSubmit(e, prefix) {
+    e.preventDefault();
+    const username = document.getElementById(prefix + 'login-username').value.trim();
+    const password = document.getElementById(prefix + 'login-password').value.trim();
+
+    if (!username || !password) {
+        showToast('请填写用户名和密码', 'error');
+        return;
+    }
+
+    const submitBtn = e.target.querySelector('.btn-primary');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '登录中...';
+    submitBtn.disabled = true;
+
+    try {
+        const res = await request('/auth/login', {
+            method: 'POST',
+            body: new URLSearchParams({ username, password })
+        });
+
+        setToken(res.data.token);
+        state.currentUser = res.data.user;
+
+        updateUserInfo();
+        showChatPage();
+        showToast('登录成功', 'success');
+
+        loadChatHistory();
+        loadKnowledgeBases();
+    } catch (err) {
+        showToast(err.message || '登录失败', 'error');
+    } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+/** 通用注册提交处理，prefix 区分新版 ('') 与旧版 ('legacy-') */
+async function handleRegisterSubmit(e, prefix) {
+    e.preventDefault();
+    const username = document.getElementById(prefix + 'reg-username').value.trim();
+    const email = document.getElementById(prefix + 'reg-email').value.trim();
+    const password = document.getElementById(prefix + 'reg-password').value.trim();
+    const confirmPassword = document.getElementById(prefix + 'reg-password-confirm').value.trim();
+
+    if (!username || !email || !password) {
+        showToast('请填写所有字段', 'error');
+        return;
+    }
+    if (password.length < 6) {
+        showToast('密码至少需要6位', 'error');
+        return;
+    }
+    if (password !== confirmPassword) {
+        showToast('两次输入的密码不一致', 'error');
+        return;
+    }
+
+    const submitBtn = e.target.querySelector('.btn-primary');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '注册中...';
+    submitBtn.disabled = true;
+
+    try {
+        const res = await request('/auth/register', {
+            method: 'POST',
+            body: new URLSearchParams({ username, email, password })
+        });
+
+        setToken(res.data.token);
+        state.currentUser = res.data.user;
+
+        updateUserInfo();
+        showChatPage();
+        showToast('注册成功，欢迎使用！', 'success');
+    } catch (err) {
+        showToast(err.message || '注册失败', 'error');
+    } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
 function initAuthEvents() {
-    // 登录表单提交
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const username = document.getElementById('login-username').value.trim();
-        const password = document.getElementById('login-password').value.trim();
+    // 新版表单
+    var loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function (e) { handleLoginSubmit(e, ''); });
+    }
+    var registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', function (e) { handleRegisterSubmit(e, ''); });
+    }
 
-        if (!username || !password) {
-            showToast('请填写用户名和密码', 'error');
-            return;
-        }
-
-        const submitBtn = e.target.querySelector('.btn-primary');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = '登录中...';
-        submitBtn.disabled = true;
-
-        try {
-            const res = await request('/auth/login', {
-                method: 'POST',
-                body: new URLSearchParams({ username, password })
-            });
-
-            setToken(res.data.token);
-            state.currentUser = res.data.user;
-
-            updateUserInfo();
-            showChatPage();
-            showToast('登录成功', 'success');
-
-            loadChatHistory();
-            loadKnowledgeBases();
-        } catch (err) {
-            showToast(err.message || '登录失败', 'error');
-        } finally {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-
-    // 注册表单提交
-    document.getElementById('register-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const username = document.getElementById('reg-username').value.trim();
-        const email = document.getElementById('reg-email').value.trim();
-        const password = document.getElementById('reg-password').value.trim();
-        const confirmPassword = document.getElementById('reg-password-confirm').value.trim();
-
-        if (!username || !email || !password) {
-            showToast('请填写所有字段', 'error');
-            return;
-        }
-        if (password.length < 6) {
-            showToast('密码至少需要6位', 'error');
-            return;
-        }
-        if (password !== confirmPassword) {
-            showToast('两次输入的密码不一致', 'error');
-            return;
-        }
-
-        const submitBtn = e.target.querySelector('.btn-primary');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = '注册中...';
-        submitBtn.disabled = true;
-
-        try {
-            const res = await request('/auth/register', {
-                method: 'POST',
-                body: new URLSearchParams({ username, email, password })
-            });
-
-            setToken(res.data.token);
-            state.currentUser = res.data.user;
-
-            updateUserInfo();
-            showChatPage();
-            showToast('注册成功，欢迎使用！', 'success');
-        } catch (err) {
-            showToast(err.message || '注册失败', 'error');
-        } finally {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }
-    });
+    // 旧版表单
+    var legacyLoginForm = document.getElementById('legacy-login-form');
+    if (legacyLoginForm) {
+        legacyLoginForm.addEventListener('submit', function (e) { handleLoginSubmit(e, 'legacy-'); });
+    }
+    var legacyRegisterForm = document.getElementById('legacy-register-form');
+    if (legacyRegisterForm) {
+        legacyRegisterForm.addEventListener('submit', function (e) { handleRegisterSubmit(e, 'legacy-'); });
+    }
 }
 
 // ==================== 退出登录 ====================
@@ -218,14 +249,19 @@ async function logout() {
 
     var loginForm = document.getElementById('login-form');
     var registerForm = document.getElementById('register-form');
+    var legacyLoginForm = document.getElementById('legacy-login-form');
+    var legacyRegisterForm = document.getElementById('legacy-register-form');
 
     var recenter = function () {
         var el = document.activeElement;
         if (!el) return;
         var tag = el.tagName;
         if (tag !== 'INPUT' && tag !== 'TEXTAREA') return;
-        // 仅处理登录/注册表单内的输入框
-        if (!(loginForm && loginForm.contains(el)) && !(registerForm && registerForm.contains(el))) return;
+        // 仅处理登录/注册表单内的输入框（新版 + 旧版）
+        if (!(loginForm && loginForm.contains(el)) &&
+            !(registerForm && registerForm.contains(el)) &&
+            !(legacyLoginForm && legacyLoginForm.contains(el)) &&
+            !(legacyRegisterForm && legacyRegisterForm.contains(el))) return;
         clearTimeout(recenter._t);
         recenter._t = setTimeout(function () {
             try { el.scrollIntoView({ block: 'center', behavior: 'auto' }); } catch (e) { /* ignore */ }

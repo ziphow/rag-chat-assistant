@@ -1,0 +1,615 @@
+/* ==================== Legacy Mode Styles ==================== */
+/* body.legacy 时生效，还原旧版简洁 UI */
+
+/* ===== 隐藏新版登录页（用 html.legacy 防止 FOUC） ===== */
+html.legacy #login-page,
+body.legacy #login-page {
+    display: none !important;
+}
+
+/* ==================== 旧版登录页 ==================== */
+#legacy-login-page {
+    display: none;
+}
+
+html.legacy #legacy-login-page,
+body.legacy #legacy-login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.legacy-login-card {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: var(--shadow-xl);
+    animation: legacyFadeInUp 0.5s ease;
+}
+
+@keyframes legacyFadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.legacy-login-header {
+    text-align: center;
+    margin-bottom: 36px;
+}
+
+.legacy-login-header .logo-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.legacy-login-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.legacy-login-header p {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* 表单：复用 styles.css 中的 .form-group / .password-wrapper / .toggle-password
+   / .form-options / .checkbox-label / .link-text / .btn-primary，
+   只需在 #legacy-login-page 作用域内微调 */
+
+#legacy-login-page .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#legacy-login-page .btn-primary {
+    padding: 13px 24px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    letter-spacing: 2px;
+}
+
+#legacy-login-page .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+#legacy-login-page .auth-switch {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+#legacy-login-page .auth-switch a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+#legacy-login-page .auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* 旧版登录页底部按钮 */
+.legacy-version-toggle {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 8px 18px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #f1f5f9;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.2s, transform 0.2s;
+    z-index: 100;
+}
+
+.legacy-version-toggle:hover {
+    background: rgba(255, 255, 255, 0.28);
+    transform: translateY(-1px);
+}
+
+.legacy-about-toggle {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    padding: 8px 18px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #f1f5f9;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.2s, transform 0.2s;
+    z-index: 100;
+}
+
+.legacy-about-toggle:hover {
+    background: rgba(255, 255, 255, 0.28);
+    transform: translateY(-1px);
+}
+
+/* ==================== 聊天页：白底黑字，移除毛玻璃/渐变/动画 ==================== */
+
+/* 强制浅色 CSS 变量 — 覆盖 styles.css 第 2515 行的非限定 :root 暗色重定义 */
+body.legacy {
+    --bg-main: #f8f9fc;
+    --bg-sidebar: #ffffff;
+    --bg-message-ai: #ffffff;
+    --text-primary: #1a1a2e;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+    --border-color: #e5e7eb;
+    --border-hover: #d1d5db;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --t-panel: #ffffff;
+    --t-panel-soft: #f8f9fc;
+    --t-glass: rgba(255, 255, 255, 0.9);
+    --t-border: #e5e7eb;
+    --t-border-strong: #d1d5db;
+    --t-text: #1a1a2e;
+    --t-text-soft: #6b7280;
+    --t-accent: #6366f1;
+    --t-accent-soft: rgba(99, 102, 241, 0.08);
+}
+
+/* 整体应用容器 */
+body.legacy .chat-app {
+    background: var(--bg-main) !important;
+}
+
+/* 主聊天区：纯色背景 */
+body.legacy .chat-main {
+    background: var(--bg-main) !important;
+}
+
+/* 聊天头部：白色背景，移除毛玻璃 */
+body.legacy .chat-header {
+    background: var(--bg-sidebar) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* 输入区：白色背景，移除毛玻璃 */
+body.legacy .chat-input-area {
+    background: var(--bg-sidebar) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* AI 消息气泡：纯白背景 */
+body.legacy .message.ai .message-bubble {
+    background: var(--bg-message-ai) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* 用户消息气泡：渐变背景（与旧版一致） */
+body.legacy .message.user .message-bubble {
+    background: var(--bg-message-user) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* 侧边栏：白色背景 */
+body.legacy .sidebar {
+    background: var(--bg-sidebar) !important;
+    border-right: 1px solid var(--border-color) !important;
+}
+
+/* 模态弹窗：白色背景 */
+body.legacy .modal-card {
+    background: white !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+body.legacy .modal-overlay {
+    background: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+body.legacy .modal-header {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+body.legacy .modal-header h3 {
+    color: var(--text-primary) !important;
+}
+
+body.legacy .modal-body {
+    color: var(--text-secondary) !important;
+}
+
+body.legacy .modal-body .form-group label {
+    color: var(--text-secondary) !important;
+}
+
+body.legacy .modal-body .form-group input {
+    background: white !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+body.legacy .modal-body .form-group input::placeholder {
+    color: var(--text-muted) !important;
+}
+
+body.legacy .modal-footer {
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* 次要按钮 */
+body.legacy .btn-secondary {
+    background: var(--bg-main) !important;
+    color: var(--text-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+body.legacy .btn-secondary:hover {
+    background: var(--bg-main) !important;
+    color: var(--text-primary) !important;
+}
+
+/* 知识库选择器菜单：白色背景 */
+body.legacy .kb-selector-menu {
+    background: white !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+/* Toast：白色背景 */
+body.legacy .toast {
+    background: white !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: var(--text-primary) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+/* ===== 以下为覆盖 styles.css 中非主题限定的暗色规则 ===== */
+
+/* 输入框、搜索框：白色背景 */
+body.legacy .form-group input {
+    background: white !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+body.legacy .form-group input:focus {
+    border-color: var(--primary) !important;
+}
+
+body.legacy .search-box input {
+    background: white !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+body.legacy .search-box input:focus {
+    background: white !important;
+}
+
+/* 输入框容器：白色背景 */
+body.legacy .input-wrapper {
+    background: white !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+body.legacy .input-box textarea {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+}
+
+/* 图标按钮 */
+body.legacy .btn-icon {
+    background: transparent !important;
+    border: 1px solid transparent !important;
+    color: var(--text-secondary) !important;
+}
+
+body.legacy .btn-icon:hover {
+    background: var(--bg-main) !important;
+    color: var(--primary) !important;
+}
+
+/* 消息操作按钮 */
+body.legacy .msg-action-btn {
+    background: var(--bg-main) !important;
+    border: 1px solid var(--border-color) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: var(--text-secondary) !important;
+}
+
+/* 建议卡片 */
+body.legacy .suggestion-card {
+    background: white !important;
+    border: 1px solid var(--border-color) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    color: var(--text-primary) !important;
+}
+
+body.legacy .suggestion-card:hover {
+    border-color: var(--primary) !important;
+    background: var(--bg-main) !important;
+}
+
+/* AI 头像 */
+body.legacy .message.ai .message-avatar {
+    background: #f3f4f6 !important;
+    color: var(--text-primary) !important;
+}
+
+/* 代码块背景 */
+body.legacy .message-bubble code {
+    background: var(--bg-main) !important;
+    color: var(--text-primary) !important;
+}
+
+/* 消息内文件卡片 */
+body.legacy .message-file {
+    background: var(--bg-main) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+body.legacy .message-file:hover {
+    background: var(--bg-main) !important;
+}
+
+/* 表格斑马纹 */
+body.legacy .md-table tbody tr:nth-child(even) {
+    background: var(--bg-main) !important;
+}
+
+/* 对话历史项激活态 */
+body.legacy .chat-history-item.active {
+    background: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* 知识库选择项 */
+body.legacy .kb-selector-item:hover {
+    background: var(--bg-main) !important;
+}
+
+/* 知识库上传区 */
+body.legacy .kb-upload-area {
+    background: var(--bg-main) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* 知识库文档项 / 已发送文件项 */
+body.legacy .kb-doc-item,
+body.legacy .sent-file-item {
+    background: var(--bg-main) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+body.legacy .kb-doc-item:hover,
+body.legacy .sent-file-item:hover {
+    background: var(--bg-main) !important;
+}
+
+body.legacy .kb-doc-info,
+body.legacy .kb-doc-name,
+body.legacy .sent-file-item * {
+    color: var(--text-primary) !important;
+}
+
+body.legacy .kb-upload-hint {
+    color: var(--text-muted) !important;
+}
+
+/* 图片预览弹窗 */
+body.legacy .image-modal {
+    background: rgba(0, 0, 0, 0.85) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ==================== 关于弹窗：白底黑字 ==================== */
+body.legacy .about-brand {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+body.legacy .about-slogan {
+    color: var(--text-secondary) !important;
+}
+
+body.legacy .about-label {
+    color: var(--text-secondary) !important;
+}
+
+body.legacy .about-value {
+    color: var(--text-primary) !important;
+}
+
+body.legacy .about-note {
+    background: rgba(167, 139, 250, 0.06) !important;
+    border: 1px solid rgba(167, 139, 250, 0.15) !important;
+    color: var(--text-secondary) !important;
+}
+
+/* ==================== 隐藏新版独有功能 ==================== */
+
+/* 头像选择弹层 */
+body.legacy .avatar-picker {
+    display: none !important;
+}
+
+/* Tab 滑块动画 */
+body.legacy .tab-slider {
+    display: none;
+}
+
+/* 消息进入动画（旧版无动画） */
+body.legacy .message {
+    animation: none !important;
+}
+
+/* 侧边栏滑入动画 */
+body.legacy .sidebar {
+    transition: margin-left 0.3s ease;
+}
+
+/* 拖拽遮罩简化 */
+body.legacy .drag-drop-overlay {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* ==================== 简化用户头像（文字首字母） ==================== */
+
+body.legacy .avatar-btn {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border: none;
+}
+
+body.legacy .avatar-btn:hover {
+    border: none;
+    transform: none;
+    box-shadow: none;
+}
+
+body.legacy .avatar-btn .avatar-img {
+    display: none;
+}
+
+body.legacy .avatar-btn::after {
+    content: attr(data-initial);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+
+/* ==================== 欢迎界面：SVG Logo 替代图片 ==================== */
+
+body.legacy .welcome-visual {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    border-radius: 20px;
+    overflow: visible;
+    border: none;
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.legacy .welcome-visual img {
+    display: none;
+}
+
+body.legacy .welcome-visual::after {
+    content: '';
+    width: 64px;
+    height: 64px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 48 48' fill='none'%3E%3Crect width='48' height='48' rx='12' fill='url(%23lg)'/%3E%3Cpath d='M24 12L36 18V30L24 36L12 30V18L24 12Z' stroke='white' stroke-width='2' fill='none'/%3E%3Ccircle cx='24' cy='24' r='4' fill='white'/%3E%3Cdefs%3E%3ClinearGradient id='lg' x1='0' y1='0' x2='48' y2='48'%3E%3Cstop stop-color='%236366f1'/%3E%3Cstop offset='1' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3C/svg%3E");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+body.legacy .welcome-screen h2 {
+    font-size: 28px;
+}
+
+/* ==================== 版本切换按钮（聊天页侧边栏） ==================== */
+
+.chat-version-toggle {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 100px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.chat-version-toggle:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* ==================== 新版登录页底部切换按钮 ==================== */
+
+.lp-version-toggle {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 8px 18px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.2s, transform 0.2s;
+    z-index: 100;
+}
+
+.lp-version-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+/* ==================== 响应式 ==================== */
+
+@media (max-width: 560px) {
+    .legacy-login-card {
+        padding: 32px 24px;
+    }
+}
+
+@media (max-width: 380px) {
+    .legacy-login-card {
+        padding: 24px 20px;
+    }
+}
