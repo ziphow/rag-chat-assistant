@@ -110,6 +110,8 @@ jobs:
             set -e
             cd ~/app
             echo '--- 拉取最新代码 ---'
+            # 清理本地未提交的改动（如上次部署中断残留），以仓库为唯一真源
+            git checkout -- . 2>/dev/null || true
             git pull --ff-only origin main
             BACKEND_HIT='${{ steps.diff.outputs.backend_hit }}'
             FRONTEND_HIT='${{ steps.diff.outputs.frontend_hit }}'
