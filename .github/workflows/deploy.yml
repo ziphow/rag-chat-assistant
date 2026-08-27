@@ -11,6 +11,19 @@ on:
       - 'docs/**'
       - '.github/**'
       - 'tools/**'
+  # 手动触发：用于部署失败后重跑，或强制重建指定服务
+  workflow_dispatch:
+    inputs:
+      rebuild:
+        description: 强制重建范围
+        required: false
+        default: frontend
+        type: choice
+        options:
+          - frontend
+          - backend
+          - all
+          - none
 
 permissions:
   contents: read
@@ -45,6 +58,17 @@ jobs:
           BACKEND_HIT=$(echo "$CHANGED" | grep -cE '^backend/' || true)
           FRONTEND_HIT=$(echo "$CHANGED" | grep -cE '^frontend/' || true)
           INFRA_HIT=$(echo "$CHANGED" | grep -cE '^compose\.ya*ml|Dockerfile|docker-compose' || true)
+
+          # 手动触发时按输入覆盖重建范围
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            case "${{ inputs.rebuild }}" in
+              all)      BACKEND_HIT=1; FRONTEND_HIT=1; INFRA_HIT=1 ;;
+              backend)  BACKEND_HIT=1; FRONTEND_HIT=0; INFRA_HIT=0 ;;
+              frontend) BACKEND_HIT=0; FRONTEND_HIT=1; INFRA_HIT=0 ;;
+              *)        BACKEND_HIT=0; FRONTEND_HIT=0; INFRA_HIT=0 ;;
+            esac
+            echo "手动触发，强制重建范围：${{ inputs.rebuild }}"
+          fi
 
           # 转为数字输出
           echo "backend_hit=$(test $BACKEND_HIT -gt 0 && echo 1 || echo 0)" >> $GITHUB_OUTPUT
@@ -82,7 +106,7 @@ jobs:
         run: |
           set -e
           echo "连接服务器 $USER@$HOST:$PORT 并执行智能部署..."
-          ssh -o StrictHostKeyChecking=accept-new -p "$PORT" "$USER@$HOST" "
+          ssh -o StrictHostKeyChecking=accept-new -o ServerAliveInterval=15 -o ServerAliveCountMax=40 -p "$PORT" "$USER@$HOST" "
             set -e
             cd ~/app
             echo '--- 拉取最新代码 ---'
@@ -90,19 +114,25 @@ jobs:
             BACKEND_HIT='${{ steps.diff.outputs.backend_hit }}'
             FRONTEND_HIT='${{ steps.diff.outputs.frontend_hit }}'
             INFRA_HIT='${{ steps.diff.outputs.infra_hit }}'
-            # 构建参数：后端/前端/基础设施变才 rebuild 对应服务，否则只 pull 不重启
+            # build 与 up 分离：避免 --build 连带重建被依赖的服务
+            # （frontend depends_on backend，up --build frontend 会连带重建 backend，
+            #   在 2核2G 服务器上构建过久易导致 SSH 中断/OOM）
             if [ \"\$INFRA_HIT\" != \"0\" ]; then
               echo '--- 基础设施变化：重建全部服务 ---'
-              docker compose up -d --build
+              docker compose build
+              docker compose up -d
             elif [ \"\$BACKEND_HIT\" != \"0\" ] && [ \"\$FRONTEND_HIT\" != \"0\" ]; then
               echo '--- 前后端都变化：重建 backend + frontend ---'
-              docker compose up -d --build backend frontend
+              docker compose build backend frontend
+              docker compose up -d backend frontend
             elif [ \"\$BACKEND_HIT\" != \"0\" ]; then
               echo '--- 仅后端变化：只重建 backend ---'
-              docker compose up -d --build backend
+              docker compose build backend
+              docker compose up -d backend
             elif [ \"\$FRONTEND_HIT\" != \"0\" ]; then
               echo '--- 仅前端变化：只重建 frontend ---'
-              docker compose up -d --build frontend
+              docker compose build frontend
+              docker compose up -d frontend
             else
               echo '--- 无有效变化，跳过 rebuild ---'
             fi
