@@ -22,4 +22,5 @@ python-multipart>=0.0.32
 rich>=15.0.0
 sqlalchemy[asyncio]>=2.0.52
 sqlmodel>=0.0.39
+tzdata>=2024.1
 uvicorn>=0.52.1
