@@ -6,6 +6,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # 前端静态资源
 WORKDIR /usr/share/nginx/html
-COPY index.html styles.css app.js ./
+COPY index.html styles.css legacy-styles.css app.js ./
 COPY assets ./assets
 COPY js ./js
