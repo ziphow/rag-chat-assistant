@@ -38,23 +38,6 @@
 
 ---
 
-## 📸 界面预览
-
-<div align="center">
-**落地页**（品牌入口 · 「让 AI 成为你的智能对话伙伴」）
-
-<img src="docs/screenshots/landing-page.png" alt="落地页预览" width="700"/>
-
-**登录页**（水墨山水 · 玻璃拟态表单 · 「从这里开始」）
-
-<img src="docs/screenshots/login-page.png" alt="登录页预览" width="700"/>
-
-</div>
-
-> 以上界面由 AI 辅助设计生成（背景素材仅供个人学习使用），前端随后经过多轮迭代美化形成当前效果。
-
----
-
 ## ✨ 功能特性
 
 | 功能 | 说明 | 状态 |
