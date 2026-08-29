@@ -143,6 +143,29 @@ function toggleSidebar() {
 
 // ==================== 复制 AI 消息 ====================
 
+/**
+ * 兼容方案：http 非安全上下文下 navigator.clipboard 不可用（会抛权限错误），
+ * 此时回退到 textarea + document.execCommand('copy')。
+ */
+function fallbackCopyText(text) {
+    try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.top = '-9999px';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+    } catch (e) {
+        return false;
+    }
+}
+
 /** 复制消息的纯文本内容到剪贴板（AI 和用户消息通用） */
 function copyMessage(btn) {
     const msgEl = btn.closest('.message');
@@ -151,7 +174,8 @@ function copyMessage(btn) {
     if (!bubble) return;
 
     const text = bubble.innerText || bubble.textContent || '';
-    navigator.clipboard.writeText(text).then(() => {
+
+    const done = () => {
         const original = btn.innerHTML;
         btn.classList.add('copied');
         btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span class="copy-label">已复制</span>';
@@ -159,9 +183,18 @@ function copyMessage(btn) {
             btn.classList.remove('copied');
             btn.innerHTML = original;
         }, 1500);
-    }).catch(() => {
-        showToast('复制失败', 'error');
-    });
+    };
+    const fail = () => showToast('复制失败', 'error');
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done).catch(() => {
+            // 安全上下文仍可能因权限被拒，尝试回退
+            fallbackCopyText(text) ? done() : fail();
+        });
+    } else {
+        // http 等非安全上下文：直接走 execCommand 回退
+        fallbackCopyText(text) ? done() : fail();
+    }
 }
 
 // ==================== 对话列表管理 ====================
@@ -366,6 +399,9 @@ function renderMessages(options = {}) {
     });
 
     if (!state.currentChatId) {
+        // 无当前对话：清空顶部标题栏并显示欢迎屏（切换账号后避免残留上一账号标题）
+        const titleEl = document.getElementById('current-chat-title');
+        if (titleEl) titleEl.textContent = '';
         if (welcomeEl) {
             welcomeEl.style.display = 'flex';
             renderSuggestions();

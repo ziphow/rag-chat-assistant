@@ -24,7 +24,13 @@ function showChatPage() {
     var legacyPage = document.getElementById('legacy-login-page');
     if (legacyPage) legacyPage.style.display = 'none';
     document.getElementById('chat-app').style.display = 'flex';
+    // 清空上一次渲染的消息残留（切换账号时左侧列表已刷新，主消息区须同步重置）
+    renderMessages();
     renderSuggestions();
+    // 侧边栏对话/知识库随当前用户状态同步渲染（配合登录/注册后的 load* 请求异步更新）
+    renderChatHistory();
+    renderKnowledgeBases();
+    renderKbSelectorOptions();
     if (window.Anim && window.Anim.loginCleanup) window.Anim.loginCleanup();
     requestAnimationFrame(() => {
         if (window.Anim) window.Anim.pageEntrance();
@@ -186,6 +192,8 @@ async function handleRegisterSubmit(e, prefix) {
         updateUserInfo();
         showChatPage();
         showToast('注册成功，欢迎使用！', 'success');
+        loadChatHistory();
+        loadKnowledgeBases();
     } catch (err) {
         showToast(err.message || '注册失败', 'error');
     } finally {
@@ -235,6 +243,13 @@ async function logout() {
     state.currentChatId = null;
     state.knowledgeBases = [];
     state.currentKbId = null;
+    state.currentDetailKbId = null;
+    state.selectedFiles = [];
+    state.isWaitingResponse = false;
+    // 同步清空侧边栏/知识库的 DOM，避免下一账号登录后残留上一账号的列表
+    renderChatHistory();
+    renderKnowledgeBases();
+    renderKbSelectorOptions();
     showLoginPage();
     showToast('已退出登录', 'info');
 }
