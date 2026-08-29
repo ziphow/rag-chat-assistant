@@ -4,6 +4,7 @@ from langchain_core.messages import AIMessageChunk, HumanMessage
 
 from sqlalchemy import select
 
+from app.ai.qwen_manager import is_quota_error
 from app.database import Message ,KnowledgeDocuments
 from app.Schemas.model import UserMessage
 from app.ai.agent import get_agent,AgentContext
@@ -91,9 +92,18 @@ async def event_stream(message : UserMessage,session,):
         if is_quota_error(e):
             # 固化切换：剔除当前模型、切换下一个，并使上一次构建的 agent 失效以便重建
             import app.ai.agent as agent_mod
-            agent_mod.chat_manager.mark_current_unavailable()
-            agent_mod.invalidate_agent()
-            yield f"data: {json.dumps({'type': 'error', 'content': '模型额度用尽，已自动切换模型，请重新发送消息'})}\n\n"
+            mgr = agent_mod.chat_manager
+            used_up_model = mgr.current_model  # mark 之前捕获旧模型名
+            switched = mgr.mark_current_unavailable()
+            if switched:
+                agent_mod.invalidate_agent()
+                msg = (
+                    f"{used_up_model} 的免费额度已用光，现已自动切换至 "
+                    f"{mgr.current_model}，请重新提问"
+                )
+            else:
+                msg = "所有备用模型的免费额度均已用光，请稍后重试"
+            yield f"data: {json.dumps({'type': 'error', 'content': msg})}\n\n"
             return
         raise
 

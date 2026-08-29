@@ -17,7 +17,7 @@ llm = init_chat_model(
     extra_body={"enable_thinking": False},
 )
 
-tip = "以下内容是用户的提问，为提问生成一条描述/总结本次提问的标题\n"
+tip = "以下内容是用户的提问，为提问生成一条精炼的描述（20个字以内）不需要输出其他任何内容！\n"
 
 
 def _build_title_llm(model: str):
