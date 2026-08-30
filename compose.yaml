@@ -50,6 +50,8 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      # 8080：仅供 Cloudflare Worker 服务器端访问后端 API（nignx 反代）
+      - "8080:8080"
     depends_on:
       - backend
 

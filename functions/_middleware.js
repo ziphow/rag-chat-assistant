@@ -12,8 +12,13 @@
  *   - 非 API 前缀（静态资源 index.html / js / css / assets 等）放行给
  *     Pages 内置静态托管（context.next()），保持缓存与 CDN 加速。
  *
- * 后端地址通过 Cloudflare Pages 的「环境变量」配置（键名 BACKEND_URL），
- * 例：BACKEND_URL=http://106.55.63.47:80
+ * 后端地址通过 Cloudflare Pages 的「环境变量」配置（键名 BACKEND_URL）。
+ *
+ * 重要：必须用「域名(非裸 IP) + 非 80 端口」。
+ *  - 用裸 IP 会报 Cloudflare error 1003（Direct IP access not allowed）。
+ *  - 用未备案域名走 80 端口会被腾讯云拦截 302 到 dnspod.qcloud.com。
+ * 例（服务器 nginx 在 8080 反代后端）：
+ *   BACKEND_URL=http://106.55.63.47.sslip.io:8080
  */
 
 // 与 backend/frontend nginx.conf 中的反代正则保持一致
