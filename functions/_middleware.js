@@ -1,6 +1,10 @@
 /**
  * Cloudflare Pages Functions 中间件（同源反向代理）
  *
+ * 位置说明：Cloudflare Pages 的 Functions 目录必须位于「项目根目录」的
+ * functions/ 下，而不是构建输出目录内。故本文件放在仓库根 /functions/，
+ * 静态资产仍由 Cloudflare Pages 的「构建输出目录 = frontend」托管。
+ *
  * 作用：
  *   - 前端部署到 Cloudflare Pages 后没有 nginx 反代，这里在 CF 的 Worker 里
  *     把 API 前缀请求在「服务器端」转发到腾讯云后端，从而保持前端 baseURL 为
