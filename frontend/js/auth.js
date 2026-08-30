@@ -11,12 +11,12 @@
 // ==================== 页面切换 ====================
 
 function showLoginPage() {
-    var legacy = isLegacyMode();
-    document.getElementById('login-page').style.display = legacy ? 'none' : 'block';
+    // 登录页始终使用统一的旧版登录卡片（风格统一），不随新版/旧版切换而改变。
+    // 聊天页外观仍由 legacy.js 依据 ui_mode 决定。
+    document.getElementById('login-page').style.display = 'none';
     var legacyPage = document.getElementById('legacy-login-page');
-    if (legacyPage) legacyPage.style.display = legacy ? 'flex' : 'none';
+    if (legacyPage) legacyPage.style.display = 'flex';
     document.getElementById('chat-app').style.display = 'none';
-    if (!legacy && window.Anim && window.Anim.loginInit) window.Anim.loginInit();
 }
 
 function showChatPage() {
@@ -230,6 +230,30 @@ function initAuthEvents() {
  * 退出登录
  * 先通知后端将 token 加入黑名单，再清除本地状态
  */
+/** 关闭所有可能残留的全屏遮罩/弹窗，避免退出登录后蒙版残留需要额外点击一次才消失 */
+function closeAllOverlays() {
+    // 通用 modal / 图片预览 / 拖拽遮罩
+    ['about-modal', 'sent-files-modal', 'create-kb-modal', 'kb-detail-modal', 'image-modal', 'drag-drop-overlay']
+        .forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('active');
+                el.style.display = 'none';
+            }
+        });
+    // 头像选择面板
+    var picker = document.getElementById('avatar-picker');
+    if (picker) picker.classList.remove('open');
+    // 画廊灯箱
+    var lightbox = document.getElementById('g-lightbox');
+    if (lightbox) lightbox.classList.remove('open');
+    // 兜底：清除任何仍带 active/open 的全屏遮罩类
+    document.querySelectorAll('.modal-overlay.active, .image-modal.active').forEach(function (el) {
+        el.classList.remove('active');
+        el.style.display = 'none';
+    });
+}
+
 async function logout() {
     try {
         await request('/auth/logout', { method: 'POST' });
@@ -237,6 +261,7 @@ async function logout() {
         // 即使后端调用失败，也要清除本地状态
     }
 
+    closeAllOverlays(); // 先收起残留遮罩，再切到登录页
     clearToken();
     state.currentUser = null;
     state.chats = [];
