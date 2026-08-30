@@ -247,10 +247,18 @@ function closeAllOverlays() {
     // 画廊灯箱
     var lightbox = document.getElementById('g-lightbox');
     if (lightbox) lightbox.classList.remove('open');
+    // 移动端侧边栏展开时动态创建的半透明遮罩（退出时必须一并移除，
+    // 否则会残留成全屏暗色蒙版，需点一次才消失）
+    var sb = document.getElementById('sidebar-backdrop');
+    if (sb) sb.remove();
+    // 退出后统一收起侧边栏，避免手机端残留已展开状态
+    var sidebarEl = document.getElementById('sidebar');
+    if (sidebarEl) sidebarEl.classList.add('collapsed');
     // 兜底：清除任何仍带 active/open 的全屏遮罩类
-    document.querySelectorAll('.modal-overlay.active, .image-modal.active').forEach(function (el) {
+    document.querySelectorAll('.modal-overlay.active, .image-modal.active, .sidebar-backdrop').forEach(function (el) {
         el.classList.remove('active');
         el.style.display = 'none';
+        if (el.parentNode && el.classList.contains('sidebar-backdrop')) el.parentNode.removeChild(el);
     });
 }
 
