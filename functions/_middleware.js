@@ -52,7 +52,8 @@ export const onRequest = async (context) => {
   if (backendUrl === 'http://127.0.0.1:8000') {
     return textResp('BACKEND_URL 仍是默认占位值，请换成真实后端地址（例：http://106.55.63.47:8080）', 500);
   }
-  // 容错：漏写 http:// 时自动补全
+  // 容错：剥离常见的误粘贴（整行 "BACKEND_URL=http://..." / 首尾空白 / 漏写协议头）
+  backendUrl = backendUrl.trim().replace(/^BACKEND_URL\s*=\s*/i, '');
   if (!/^https?:\/\//i.test(backendUrl)) {
     backendUrl = 'http://' + backendUrl;
   }
