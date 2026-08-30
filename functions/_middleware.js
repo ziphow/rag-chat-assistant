@@ -29,6 +29,18 @@ function textResp(body, status) {
 export const onRequest = async (context) => {
   const url = new URL(context.request.url);
 
+  // 诊断探针：GET /__status 无需登录即可查看当前中间件版本与后端配置
+  // 用于确认线上部署的 Worker 是否为最新构建（用户遇到 1101 时先看这里）
+  if (url.pathname === '/__status') {
+    const backendUrl = (context.env && context.env.BACKEND_URL) || '(unset)';
+    return textResp(
+      'middleware_version=04e8ed3-probe\n' +
+      'BACKEND_URL=' + backendUrl + '\n' +
+      '时间=' + new Date().toISOString(),
+      200
+    );
+  }
+
   if (!API_PATTERN.test(url.pathname)) {
     return context.next(); // 静态资源交给 Pages 处理
   }
