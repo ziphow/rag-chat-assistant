@@ -33,27 +33,33 @@ export const onRequest = async (context) => {
     return context.next(); // 静态资源交给 Pages 处理
   }
 
-  const backendUrl = (context.env && context.env.BACKEND_URL) || '';
+  let backendUrl = (context.env && context.env.BACKEND_URL) || '';
   if (!backendUrl) {
     return textResp('BACKEND_URL 未配置，请在 Cloudflare Pages 环境变量中设置后端地址', 500);
   }
   if (backendUrl === 'http://127.0.0.1:8000') {
     return textResp('BACKEND_URL 仍是默认占位值，请换成真实后端地址（例：http://106.55.63.47:8080）', 500);
   }
+  // 容错：漏写 http:// 时自动补全
+  if (!/^https?:\/\//i.test(backendUrl)) {
+    backendUrl = 'http://' + backendUrl;
+  }
 
   // 复制原始请求（保留 method / headers / body 流，兼容上传与 SSE），仅改后端地址
-  const upstream = new Request(backendUrl + url.pathname + url.search, context.request);
-  upstream.headers.delete('host');
-  upstream.headers.set('x-forwarded-host', url.host);
-  upstream.headers.set('x-forwarded-proto', url.protocol.replace(':', ''));
-
+  // 整段放进 try：URL 拼错 / 域名解析失败 / 连接失败都会给出可读报错，而不抛 1101
   let resp;
+  let upstream;
   try {
+    upstream = new Request(backendUrl + url.pathname + url.search, context.request);
+    upstream.headers.delete('host');
+    upstream.headers.set('x-forwarded-host', url.host);
+    upstream.headers.set('x-forwarded-proto', url.protocol.replace(':', ''));
+
     // redirect:'manual'：不自动跟随后端 302，以免跟随到腾讯云拦截页(webblock)污染响应
     resp = await fetch(upstream, { redirect: 'manual' });
   } catch (e) {
     const reason = (e && e.message) ? e.message : String(e);
-    return textResp(`后端服务不可达，请检查服务器端口/防火墙。目标=${backendUrl}。详情: ${reason}`, 502);
+    return textResp(`后端请求失败。目标=${backendUrl}${url.pathname}。详情: ${reason}`, 502);
   }
 
   // 若后端返回 3xx 重定向（如腾讯云 webblock），转成明确报错而非透传
