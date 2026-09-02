@@ -11,12 +11,13 @@
 // ==================== 页面切换 ====================
 
 function showLoginPage() {
-    // 登录页始终使用统一的旧版登录卡片（风格统一），不随新版/旧版切换而改变。
-    // 聊天页外观仍由 legacy.js 依据 ui_mode 决定。
-    document.getElementById('login-page').style.display = 'none';
+    // 登录页按 ui_mode 显示新版或旧版，配合登录页"体验新版/返回旧版"按钮切换。
+    var legacy = isLegacyMode();
+    document.getElementById('login-page').style.display = legacy ? 'none' : 'block';
     var legacyPage = document.getElementById('legacy-login-page');
-    if (legacyPage) legacyPage.style.display = 'flex';
+    if (legacyPage) legacyPage.style.display = legacy ? 'flex' : 'none';
     document.getElementById('chat-app').style.display = 'none';
+    if (!legacy && window.Anim && window.Anim.loginInit) window.Anim.loginInit();
 }
 
 function showChatPage() {

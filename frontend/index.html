@@ -12,12 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
     <script>
-        // FOUC 防闪烁：登录页始终使用统一的旧版登录卡片（风格统一）。
-        // 即使此前手动切到新版，登录页也一律按旧版渲染，避免 localStorage 残留
-        // 的 ui_mode='modern' 导致登录页出现新版落地页或样式闪烁。
-        // 聊天页则仍由 js/legacy.js 依据 ui_mode 决定新版/旧版外观。
+        // FOUC 防闪烁：在 body 渲染前检查模式，提前添加 html.legacy 类。
+        // 登录页允许在旧版/新版之间切换：仅当用户未明确选择新版时按旧版渲染，
+        // 保证旧版卡片为默认，同时不影响"体验新版 UI"按钮切换登录页。
         (function () {
-            document.documentElement.classList.add('legacy');
+            if (localStorage.getItem('ui_mode') !== 'modern') {
+                document.documentElement.classList.add('legacy');
+            }
         })();
     </script>
 </head>
@@ -814,7 +815,7 @@
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="js/markdown.js?v=21.3"></script>
     <script src="js/api.js?v=21.3"></script>
-    <script src="js/auth.js?v=24.2"></script>
+    <script src="js/auth.js?v=24.3"></script>
     <script src="js/theme.js?v=21.3"></script>
     <script src="js/avatar.js?v=22.0"></script>
     <script src="js/chat.js?v=23.0"></script>
