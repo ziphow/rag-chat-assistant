@@ -304,18 +304,24 @@ async function createNewChat() {
 async function selectChat(chatId) {
     state.currentChatId = chatId;
     const chat = state.chats.find(c => c.id === chatId);
-    if (chat) {
-        document.getElementById('current-chat-title').textContent = chat.title;
-        renderChatHistory();
-        try {
-            const res = await request(`/chats/${chatId}`);
-            chat.messages = res.data || [];
-            renderMessages();
-        } catch (error) {
-            chat.messages = [];
-            renderMessages();
-            showToast(error.message, 'error');
-        }
+    if (!chat) return;
+    document.getElementById('current-chat-title').textContent = chat.title;
+    renderChatHistory();
+
+    // 优化：该对话消息已在上次加载过则直接复用缓存，切换对话时不再重复请求
+    if (Array.isArray(chat.messages)) {
+        renderMessages();
+        return;
+    }
+
+    try {
+        const res = await request(`/chats/${chatId}`);
+        chat.messages = res.data || [];
+        renderMessages();
+    } catch (error) {
+        chat.messages = [];
+        renderMessages();
+        showToast(error.message, 'error');
     }
 }
 
