@@ -11,17 +11,13 @@
 // ==================== 页面切换 ====================
 
 function showLoginPage() {
-    // 登录页按 ui_mode 显示新版或旧版，配合登录页"体验新版/返回旧版"按钮切换。
-    var legacy = isLegacyMode();
-    document.getElementById('login-page').style.display = legacy ? 'none' : 'block';
+    // 仅保留旧版登录页
     var legacyPage = document.getElementById('legacy-login-page');
-    if (legacyPage) legacyPage.style.display = legacy ? 'flex' : 'none';
+    if (legacyPage) legacyPage.style.display = 'flex';
     document.getElementById('chat-app').style.display = 'none';
-    if (!legacy && window.Anim && window.Anim.loginInit) window.Anim.loginInit();
 }
 
 function showChatPage() {
-    document.getElementById('login-page').style.display = 'none';
     var legacyPage = document.getElementById('legacy-login-page');
     if (legacyPage) legacyPage.style.display = 'none';
     document.getElementById('chat-app').style.display = 'flex';
@@ -37,55 +33,6 @@ function showChatPage() {
         if (window.Anim) window.Anim.pageEntrance();
     });
     if (isLegacyMode()) updateLegacyAvatar();
-}
-
-/** 切换登录 / 注册表单显示 */
-function switchAuth(type) {
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const tabLogin = document.getElementById('auth-tab-login');
-    const tabRegister = document.getElementById('auth-tab-register');
-
-    const toRegister = type === 'register';
-    const showForm = toRegister ? registerForm : loginForm;
-    const hideForm = toRegister ? loginForm : registerForm;
-
-    if (tabLogin) tabLogin.classList.toggle('active', !toRegister);
-    if (tabRegister) tabRegister.classList.toggle('active', toRegister);
-
-    // 目标表单已显示则无需切换
-    if (hideForm.style.display === 'none') return;
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        hideForm.style.display = 'none';
-        showForm.style.display = 'flex';
-        return;
-    }
-
-    // 出场动画 → 切换显示 → 入场动画
-    hideForm.classList.remove('auth-form--in');
-    hideForm.classList.add('auth-form--out');
-    window.setTimeout(function () {
-        hideForm.classList.remove('auth-form--out');
-        hideForm.style.display = 'none';
-        showForm.style.display = 'flex';
-        showForm.classList.remove('auth-form--in');
-        void showForm.offsetWidth; // 触发回流以重启入场动画
-        showForm.classList.add('auth-form--in');
-    }, 250);
-}
-
-/** 平滑滚动到登录 / 注册区，可选切换表单类型 */
-function scrollToAuth(type) {
-    const el = document.getElementById('lp-auth');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (type) switchAuth(type);
-}
-
-/** 平滑滚动到核心能力区 */
-function scrollToFeatures() {
-    const el = document.getElementById('lp-features');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /** 切换密码输入框可见性 */
